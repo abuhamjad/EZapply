@@ -1,192 +1,416 @@
-EZApply — AI-powered job application automation system
-AI-powered job application bot that automatically applies to jobs on LinkedIn and Naukri.com using your resume.
-![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
-![Flask](https://img.shields.io/badge/Flask-3.0+-green?logo=flask)
-![Selenium](https://img.shields.io/badge/Selenium-4.15+-orange?logo=selenium)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+# EZApply
+
+**AI-Powered Job Application Automation System**
+
+EZApply is an intelligent job application platform that automates the process of searching and applying for jobs on LinkedIn and Naukri.com. The system combines resume parsing, AI-assisted profile analysis, automated form filling, and browser automation to streamline the job application process.
+
 ---
-Features
-Resume Parsing — Upload PDF/DOCX/TXT, AI extracts skills, keywords & contact info
-Smart Job Search — Auto-searches jobs based on your resume skills
-Auto Apply — Fills forms and applies to Easy Apply jobs automatically
-Contact Auto-Fill — Phone, email, name, location filled from resume
-Interactive Prompts — Bot asks YOU when it can't fill a field
-Answer Memory — Saves your answers, never asks the same question twice
-Cookie Persistence — Login sessions saved across restarts
+
+## Overview
+
+EZApply helps job seekers reduce repetitive manual work by automatically:
+
+* Parsing resumes and extracting relevant information
+* Generating job search keywords from candidate profiles
+* Searching for relevant opportunities
+* Completing application forms
+* Managing user responses for recurring application questions
+* Applying to jobs across multiple platforms
+
+The system is designed as a full-stack application consisting of a Flask backend, browser automation services, AI-assisted resume analysis, and a web-based dashboard.
+
 ---
-Project Structure
-```
-Apply Bot/
-├── app.py                 # Flask backend server (API routes)
-├── bot\_manager.py         # Orchestrates bot threads \& events
-├── linkedin\_bot.py        # LinkedIn Easy Apply automation
-├── naukri\_bot.py          # Naukri.com job apply automation
-├── resume\_parser.py       # AI + regex resume parsing
-├── ai\_matcher.py          # Job-resume matching logic
-├── constants.py           # URLs, config defaults, geo IDs
-├── requirements.txt       # Python dependencies
-├── README.md              # This file
+
+## Key Features
+
+### Resume Parsing
+
+* Upload resumes in PDF, DOCX, or TXT format
+* Extract contact information automatically
+* Identify skills, experience, education, and keywords
+* Generate structured candidate profiles using AI
+
+### Intelligent Job Search
+
+* Generate job search keywords from resume data
+* Search jobs based on skills and career profile
+* Support multiple locations and experience levels
+* Apply company and title blacklists
+
+### Automated Job Applications
+
+* LinkedIn Easy Apply automation
+* Naukri.com job application automation
+* Automatic resume upload
+* Multi-step application handling
+
+### Smart Form Filling
+
+* Auto-fill common fields such as:
+
+  * Name
+  * Email
+  * Phone number
+  * Location
+  * LinkedIn profile URL
+
+### Interactive User Assistance
+
+When application forms require information that cannot be extracted automatically, the system prompts the user for input through the dashboard.
+
+Examples include:
+
+* Notice period
+* Current compensation
+* Expected salary
+* Work authorization status
+
+### Persistent Answer Memory
+
+* Stores user responses locally
+* Reuses previously provided answers
+* Eliminates repetitive form completion
+
+### Session Persistence
+
+* Saves authentication cookies
+* Restores login sessions between runs
+* Reduces repeated login requirements
+
+## Project Structure
+
+```text
+EZApply/
 │
-├── frontend/              # Dashboard UI
-│   ├── index.html         # Main HTML page
-│   ├── style.css          # Dark theme CSS
-│   └── app.js             # Frontend logic (SSE, API calls)
+├── app.py
+├── bot_manager.py
+├── linkedin_bot.py
+├── naukri_bot.py
+├── resume_parser.py
+├── ai_matcher.py
+├── constants.py
+├── requirements.txt
+├── README.md
 │
-├── resumes/               # Drop your resume here (auto-created)
-├── cookies/               # Login session cookies (auto-created)
-├── data/                  # Job tracking data (auto-created)
-└── user\_answers.json      # Saved answers for form fields (auto-created)
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+│
+├── resumes/
+├── cookies/
+├── data/
+└── user_answers.json
 ```
-Auto-Generated Files (safe to delete)
-File	Purpose
-`user\_answers.json`	Stores your answers to form questions so the bot doesn't ask again. Delete to reset.
-`cookies/`	Saved login sessions for LinkedIn/Naukri. Delete to force re-login.
-`data/`	Job application history and tracking.
-`\_\_pycache\_\_/`	Python bytecode cache. Safe to delete anytime.
+
+### Core Modules
+
+| File             | Description                          |
+| ---------------- | ------------------------------------ |
+| app.py           | Flask backend and API server         |
+| bot_manager.py   | Coordinates bot execution and events |
+| linkedin_bot.py  | LinkedIn automation logic            |
+| naukri_bot.py    | Naukri automation logic              |
+| resume_parser.py | Resume extraction and AI analysis    |
+| ai_matcher.py    | Job matching and AI utilities        |
+| constants.py     | Configuration values and defaults    |
+
 ---
-Quick Start
-Prerequisites
-Python 3.9+ — Download
-Google Chrome — Download (latest version)
-Groq API Key (optional) — Get free key for AI resume parsing
-Step 1: Clone / Download
+
+## Auto-Generated Files
+
+The following files and directories are created automatically during execution:
+
+| File / Folder     | Purpose                                  |
+| ----------------- | ---------------------------------------- |
+| user_answers.json | Stores user-provided application answers |
+| cookies/          | Stores login session cookies             |
+| data/             | Stores application tracking information  |
+| **pycache**/      | Python bytecode cache                    |
+
+These files can be safely removed if a reset is required.
+
+---
+
+# Installation
+
+## Prerequisites
+
+* Python 3.9 or later
+* Google Chrome (latest version)
+* Git
+* Groq API Key (optional)
+
+---
+
+## Clone Repository
+
 ```bash
-git clone <your-repo-url>
-cd "Apply Bot"
+git clone https://github.com/your-username/EZApply.git
+cd EZApply
 ```
-Or download the ZIP and extract it.
-Step 2: Install Dependencies
+
+---
+
+## Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
-Step 3: Add Your Resume
-Place your resume (PDF, DOCX, or TXT) in the `resumes/` folder:
-```
+
+---
+
+## Add Resume
+
+Place your resume inside the `resumes` directory.
+
+```text
 resumes/
-  └── Your\_Resume.pdf
+└── Resume.pdf
 ```
-> \*\*Or\*\* upload via the dashboard after starting the server.
-Step 4: Start the Server
+
+Alternatively, upload a resume through the dashboard after starting the application.
+
+---
+
+## Start the Application
+
 ```bash
 python app.py
 ```
-You'll see:
-```
+
+Expected output:
+
+```text
 Job Apply Bot Server Starting...
 Dashboard: http://localhost:5000
 Put resumes in: ./resumes/
 ```
-Step 5: Open Dashboard
-Open your browser and go to:
-```
+
+---
+
+## Open Dashboard
+
+Navigate to:
+
+```text
 http://localhost:5000
 ```
+
 ---
-Usage Guide
-1. Upload & Parse Resume
-Drag & drop your resume onto the upload area (or click to browse)
-Click "Parse AI" to extract skills, keywords, and contact info
-Verify the extracted contact info (phone, email, location) is correct
-2. Configure Settings
-Setting	Description
-Platforms	Toggle LinkedIn and/or Naukri
-LinkedIn Email/Password	Your LinkedIn login credentials
-Naukri Email/Password	Your Naukri login credentials
-Groq API Key	(Optional) For smarter AI resume parsing
-Search Keywords	Auto-filled from resume, or type your own
-Location	Job search location (default: India)
-Experience Level	Internship, Entry, Mid-Senior, etc.
-Max Applications	Limit per session (default: 50)
-Mode	Live Apply or Dry Run (test without applying)
-Blacklist Companies	Skip specific companies
-3. Start the Bot
-Click "▶ Start Bot"
-Chrome will open automatically and log into LinkedIn/Naukri
-If CAPTCHA appears, solve it manually (bot waits 30 seconds)
-4. Interactive Prompts
-When the bot encounters a form field it can't fill:
-A pulsing cyan prompt appears in the Live Activity feed
-Type your answer and press Enter or click Send
-Click Skip to leave the field empty
-Your answer is saved permanently — bot won't ask again
-5. Saved Answers
-Scroll down to the "Saved Answers" card to see all stored Q&A pairs:
-Click the X button to delete a specific answer
-Click the trash icon in the header to clear all answers
-Answers persist in `user\_answers.json` across sessions
+
+# Usage Guide
+
+## Step 1: Upload Resume
+
+1. Upload a PDF, DOCX, or TXT resume.
+2. Parse the resume using AI.
+3. Review extracted information.
+
 ---
-Configuration File Reference
-`constants.py`
-Edit this file to change default URLs, speed, and presets:
+
+## Step 2: Configure Settings
+
+### Account Credentials
+
+* LinkedIn Email
+* LinkedIn Password
+* Naukri Email
+* Naukri Password
+
+### AI Configuration
+
+* Groq API Key (Optional)
+
+### Search Configuration
+
+* Keywords
+* Location
+* Experience Level
+* Job Type
+* Remote Preference
+
+### Application Controls
+
+* Maximum Applications
+* Dry Run Mode
+* Blacklisted Companies
+* Blacklisted Job Titles
+
+---
+
+## Step 3: Start Automation
+
+1. Click **Start Bot**
+2. Chrome launches automatically
+3. Login is performed automatically
+4. Solve CAPTCHA manually if prompted
+
+---
+
+## Step 4: Respond to Application Questions
+
+If required information is missing, the system requests user input through the dashboard.
+
+Responses are automatically stored and reused in future sessions.
+
+---
+
+## Step 5: Manage Saved Answers
+
+The Saved Answers section allows users to:
+
+* View stored answers
+* Delete individual entries
+* Clear all stored responses
+
+---
+
+# Configuration
+
+## constants.py
+
+Important settings include:
+
 ```python
-BOT\_SPEED = SPEED\_SLOW    # Change to SPEED\_FAST or SPEED\_MEDIUM
-GROQ\_MODEL = "llama-3.3-70b-versatile"  # Change AI model
+BOT_SPEED = SPEED_SLOW
+GROQ_MODEL = "llama-3.3-70b-versatile"
 ```
-Environment Variables (optional)
-```bash
-# Set Groq API key as env variable instead of UI input
-set GROQ\_API\_KEY=gsk\_your\_key\_here
-```
+
+These values can be modified to change runtime behavior.
+
 ---
-Troubleshooting
-"ChromeDriver not found"
-Make sure Google Chrome is installed and up to date
-`webdriver-manager` auto-downloads the correct driver
-"LinkedIn login failed"
-Double-check email/password
-Solve CAPTCHA manually if it appears (bot waits 30s)
-Delete `cookies/` folder and retry
-LinkedIn may temporarily block automated logins — wait and retry
-"Naukri login error: no such element"
-Naukri changes their UI frequently
-The bot uses 8+ fallback selectors — if all fail, check if Naukri updated their login page
-A debug screenshot is saved as `naukri\_login\_debug.png`
-Bot skips jobs / doesn't apply
-Ensure resume is parsed (click "Parse AI")
-Check "Dry Run" mode is OFF (set to "Live Apply")
-Some jobs require additional steps the bot can't handle
-Port 5000 already in use
+
+## Environment Variables
+
+Groq API credentials can be configured using environment variables.
+
+Windows:
+
 ```bash
-# Kill existing process on port 5000 (Windows)
+set GROQ_API_KEY=your_api_key
+```
+
+Linux / macOS:
+
+```bash
+export GROQ_API_KEY=your_api_key
+```
+
+---
+
+# Troubleshooting
+
+## ChromeDriver Issues
+
+* Ensure Google Chrome is installed
+* Update Chrome to the latest version
+* webdriver-manager automatically downloads compatible drivers
+
+---
+
+## LinkedIn Login Issues
+
+* Verify credentials
+* Complete CAPTCHA if requested
+* Delete the cookies directory and retry
+* Wait before retrying if LinkedIn temporarily blocks login attempts
+
+---
+
+## Naukri Login Issues
+
+Naukri periodically updates its user interface.
+
+If login fails:
+
+* Check credentials
+* Review generated debug screenshots
+* Update element selectors if required
+
+---
+
+## Applications Are Not Being Submitted
+
+Verify that:
+
+* Resume parsing completed successfully
+* Dry Run mode is disabled
+* The target job supports automated application workflows
+
+---
+
+## Port Already in Use
+
+Windows:
+
+```bash
 netstat -ano | findstr :5000
 taskkill /PID <PID> /F
+```
 
-# Or use a different port
+Alternative:
+
+```bash
 python -c "from app import app; app.run(port=5001)"
 ```
-Reset everything
+
+---
+
+## Reset Application Data
+
+Windows:
+
 ```bash
-# Delete all saved data
-del user\_answers.json
+del user_answers.json
 rmdir /s /q cookies
 rmdir /s /q data
-rmdir /s /q \_\_pycache\_\_
+rmdir /s /q __pycache__
 ```
+
 ---
-Security Notes
-Credentials are NOT stored on disk — they stay in browser memory only
-Login cookies are saved locally in `cookies/` for session persistence
-Groq API key is only sent to Groq's servers for resume parsing
-`user\_answers.json` may contain personal info — don't share publicly
+
+# Security Considerations
+
+* User credentials are not persisted to disk
+* Session cookies are stored locally
+* Groq API requests are only used for AI-assisted resume analysis
+* Stored answers may contain personal information and should not be shared publicly
+
 ---
-Dependencies
-Package	Purpose
-`flask`	Web server & API
-`flask-cors`	Cross-origin requests
-`selenium`	Browser automation
-`webdriver-manager`	Auto ChromeDriver management
-`selenium-stealth`	Anti-bot detection bypass
-`PyPDF2`	PDF resume parsing
-`python-docx`	DOCX resume parsing
-`requests`	HTTP calls to Groq API
+
+# Dependencies
+
+| Package           | Purpose                         |
+| ----------------- | ------------------------------- |
+| Flask             | Backend API server              |
+| Flask-CORS        | Cross-origin support            |
+| Selenium          | Browser automation              |
+| webdriver-manager | ChromeDriver management         |
+| selenium-stealth  | Automation detection mitigation |
+| PyPDF2            | PDF resume parsing              |
+| python-docx       | DOCX resume parsing             |
+| requests          | API communication               |
+
 ---
-Roadmap
-[ ] Naukri.com form auto-fill (like LinkedIn)
-[ ] Job application history page
-[ ] Email notifications on completion
-[ ] Multiple resume profiles
-[ ] Production deployment with Gunicorn
+
+# Roadmap
+
+### Planned Enhancements
+
+* [ ] Advanced job quality scoring
+* [ ] Skill gap analysis
+* [ ] Resume tailoring for specific job descriptions
+* [ ] Application history dashboard
+* [ ] Email notifications
+* [ ] Multiple resume profiles
+* [ ] Additional job platform integrations
+* [ ] Production deployment support
+
 ---
-License
-MIT License — free to use, modify, and distribute.
----
+
+# License
+
+This project is released under the MIT License.
+
+See the LICENSE file for details.
