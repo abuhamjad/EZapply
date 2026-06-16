@@ -1,6 +1,7 @@
 # ============================================================
 # Job Apply Bot — Constants & Configuration Defaults
 # ============================================================
+import os
 
 # Platform URLs
 LINKEDIN_BASE = "https://www.linkedin.com"
@@ -81,7 +82,6 @@ DEFAULT_CONFIG = {
     "linkedin_password": "",
     "naukri_email": "",
     "naukri_password": "",
-    "groq_api_key": "",
     "platforms": ["linkedin"],
     "keywords": [],
     "location": ["India"],
@@ -99,6 +99,8 @@ DEFAULT_CONFIG = {
     "preferred_resume": "",
 }
 
-# Groq API
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+# AWS Bedrock Claude API
+BEDROCK_API_KEY = os.environ.get("BEDROCK_API_KEY", "")
+BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+BEDROCK_MODEL_ID = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+BEDROCK_API_URL = f"https://bedrock-runtime.{BEDROCK_REGION}.amazonaws.com/model/{BEDROCK_MODEL_ID}/invoke"

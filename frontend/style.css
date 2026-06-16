@@ -482,3 +482,12 @@ main {
     background: rgba(0, 212, 255, 0.05);
 }
 .feed-item.question .feed-msg { color: var(--accent-cyan); font-weight: 600; }
+
+/* --- AI Status Badge --- */
+.ai-status-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);
+    color: var(--accent-green); font-size: 0.85rem; font-weight: 600;
+}
+.ai-status-badge svg { flex-shrink: 0; }

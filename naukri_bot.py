@@ -16,27 +16,9 @@ class NaukriBot:
         self.event_queue.put({"type":etype,"message":msg,"data":data or {},"timestamp":time.strftime("%H:%M:%S")})
 
     def setup_driver(self):
-        from selenium import webdriver
-        from selenium.webdriver.chrome.service import Service as ChromeService
-        from webdriver_manager.chrome import ChromeDriverManager
-        options = webdriver.ChromeOptions()
-        for arg in ["--no-sandbox","--ignore-certificate-errors","--disable-extensions","--disable-gpu","--disable-dev-shm-usage","--start-maximized","--disable-blink-features=AutomationControlled"]:
-            options.add_argument(arg)
-        options.add_experimental_option("useAutomationExtension", False)
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        if self.config.get("headless"): options.add_argument("--headless")
-        try:
-            ci = ChromeDriverManager().install()
-            folder = os.path.dirname(ci)
-            cp = os.path.join(folder, "chromedriver.exe")
-            if not os.path.exists(cp): cp = ci
-            self.driver = webdriver.Chrome(service=ChromeService(cp), options=options)
-        except:
-            self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-        try:
-            from selenium_stealth import stealth
-            stealth(self.driver, languages=["en-US","en"], vendor="Google Inc.", platform="Win32", webgl_vendor="Intel Inc.", renderer="Intel Iris OpenGL Engine", fix_hairline=True)
-        except: pass
+        from browser_driver import create_driver
+        self.driver, browser_name = create_driver(headless=self.config.get("headless", False))
+        self.emit("info", f"🌐 Using {browser_name.title()} browser")
 
     def get_hash(self, s): return hashlib.md5(s.encode("utf-8")).hexdigest()
 
@@ -264,25 +246,121 @@ class NaukriBot:
                     if dry:
                         self.stats["applied"]+=1; self.emit("success",f"🧪 DRY RUN Naukri: {jt}")
                         self.emit("stats","📊",self.stats.copy()); continue
-                    # Find apply button
+
+                    # Check for "Already Applied" badge specifically
+                    already = False
+                    already_selectors = [
+                        "div.already-applied",
+                        "span.already-applied",
+                        "div[class*='already-applied']",
+                        "span[class*='already-applied']",
+                        "div.applied-msg",
+                    ]
+                    for sel in already_selectors:
+                        try:
+                            el = self.driver.find_element(By.CSS_SELECTOR, sel)
+                            if el and el.is_displayed():
+                                already = True; break
+                        except: continue
+                    if already:
+                        self.stats["already_applied"]+=1
+                        self.emit("info",f"✔️ Already applied: {jt}")
+                        self.emit("stats","📊",self.stats.copy()); continue
+
+                    # Find apply button — multiple selectors
                     applied = False
-                    for sel in ["button#apply-button","button.apply-button","button[id*='apply']","button[class*='apply']","a[class*='apply']"]:
+                    apply_selectors = [
+                        "button#apply-button",
+                        "button.apply-button",
+                        "button[id*='apply']",
+                        "button[class*='apply']",
+                        "button[id='apply-btn']",
+                        "button.styles_apply-button",
+                        "div.apply-button-container button",
+                    ]
+                    # Track main window
+                    main_window = self.driver.current_window_handle
+                    for sel in apply_selectors:
                         try:
                             btn = self.driver.find_element(By.CSS_SELECTOR, sel)
                             if btn.is_displayed() and btn.is_enabled():
-                                btn.click(); time.sleep(2)
+                                btn_text = btn.text.strip().lower()
+                                # Skip "already applied" buttons
+                                if "already" in btn_text:
+                                    already = True; break
+                                btn.click(); time.sleep(3)
+                                # Handle new tab opened by apply
+                                handles = self.driver.window_handles
+                                if len(handles) > 1:
+                                    # New tab = external company site. Not a real Naukri apply.
+                                    new_tab = None
+                                    for h in handles:
+                                        if h != main_window:
+                                            new_tab = h; break
+                                    if new_tab:
+                                        self.driver.switch_to.window(new_tab)
+                                        new_url = self.driver.current_url.lower()
+                                        time.sleep(1)
+                                        self.driver.close()
+                                        self.driver.switch_to.window(main_window)
+                                        if "naukri.com" not in new_url:
+                                            # External redirect — skip, don't count
+                                            self.stats["skipped"]+=1
+                                            self.emit("info",f"↗️ External apply (skipped): {jt}")
+                                            break
+                                # Check if apply dialog appeared (Naukri chatbot apply)
+                                time.sleep(1)
+                                # Try to upload resume if upload field exists
+                                try:
+                                    upload = self.driver.find_element(By.CSS_SELECTOR, "input[type='file']")
+                                    rpath = self.config.get("resume_path","")
+                                    if upload and rpath and os.path.exists(rpath):
+                                        upload.send_keys(rpath)
+                                        time.sleep(2)
+                                except: pass
+                                # Try submitting any final apply/submit button in dialog
+                                try:
+                                    submit_selectors = [
+                                        "button[type='submit']",
+                                        "button.chatbot_submit",
+                                        "button[class*='submit']",
+                                        "button[class*='Submit']",
+                                    ]
+                                    for sub_sel in submit_selectors:
+                                        try:
+                                            sub_btn = self.driver.find_element(By.CSS_SELECTOR, sub_sel)
+                                            if sub_btn.is_displayed() and sub_btn.is_enabled():
+                                                sub_btn.click(); time.sleep(1); break
+                                        except: continue
+                                except: pass
                                 self.stats["applied"]+=1; applied = True
                                 self.emit("success",f"🎉 Naukri applied: {jt}"); break
                         except: continue
-                    if not applied:
-                        # Check if already applied
+
+                    if already:
+                        self.stats["already_applied"]+=1
+                        self.emit("info",f"✔️ Already applied: {jt}")
+                    elif not applied:
+                        # XPath fallback — only for buttons, not anchor links (which are usually external)
                         try:
-                            page = self.driver.page_source.lower()
-                            if "already applied" in page or "applied" in page:
-                                self.stats["already_applied"]+=1; self.emit("info",f"✔️ Already applied: {jt}")
-                            else:
-                                self.stats["failed"]+=1; self.emit("warning",f"⚠️ No apply btn: {jt}")
-                        except: self.stats["failed"]+=1
+                            btn = self.driver.find_element(By.XPATH, "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'apply')]")
+                            if btn.is_displayed() and btn.is_enabled():
+                                btn.click(); time.sleep(3)
+                                handles = self.driver.window_handles
+                                if len(handles) > 1:
+                                    for h in handles:
+                                        if h != main_window:
+                                            self.driver.switch_to.window(h)
+                                            self.driver.close()
+                                    self.driver.switch_to.window(main_window)
+                                    self.stats["skipped"]+=1
+                                    self.emit("info",f"↗️ External apply (skipped): {jt}")
+                                else:
+                                    self.stats["applied"]+=1; applied = True
+                                    self.emit("success",f"🎉 Naukri applied: {jt}")
+                        except: pass
+                        if not applied:
+                            self.stats["skipped"]+=1; self.emit("info",f"⏭️ No apply btn: {jt}")
                 except Exception as e:
                     self.stats["failed"]+=1; self.emit("error",f"❌ Naukri error: {str(e)[:50]}")
                 self.emit("stats","📊",self.stats.copy())
