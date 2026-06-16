@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+
+cookies/
+resumes/
+
+.env
+*.pkl
+
+user_answers.json
+.vscode/
