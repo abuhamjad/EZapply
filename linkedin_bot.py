@@ -2,6 +2,7 @@
 import hashlib, math, os, pickle, random, time, queue
 from typing import Optional, Dict, List
 import constants
+from ai_matcher import AIMatcher
 
 class LinkedinBot:
     ANSWERS_FILE = os.path.join(os.getcwd(), "user_answers.json")
@@ -15,6 +16,8 @@ class LinkedinBot:
         self.running = False
         self.stats = {"jobs_found":0,"applied":0,"skipped":0,"blacklisted":0,"already_applied":0,"failed":0}
         self._user_answers = self._load_saved_answers()
+        # Initialize AI matcher for auto-answering
+        self.ai_matcher = AIMatcher()
 
     def _load_saved_answers(self):
         """Load previously saved user answers from disk."""
@@ -59,7 +62,23 @@ class LinkedinBot:
                 self.emit("info", f"💾 Auto-answered \"{field_name}\" from saved data")
                 return saved_val
 
-        # Not found in saved answers — ask user
+        # Not found in saved answers — try AI auto-answer first
+        if self.ai_matcher and constants.BEDROCK_API_KEY and self.resume_data:
+            # Extract options if present in field_name
+            options = []
+            if "(options" in field_name.lower():
+                try:
+                    opts_str = field_name.split("(options:")[1].rstrip(")")
+                    options = [o.strip() for o in opts_str.split(",") if o.strip()]
+                except: pass
+            ai_answer = self.ai_matcher.answer_question(field_name, self.resume_data, options if options else None)
+            if ai_answer and ai_answer.strip():
+                self._user_answers[base_key] = ai_answer.strip()
+                self._save_answers()
+                self.emit("info", f"🤖 AI auto-answered \"{field_name}\": {ai_answer.strip()[:50]}")
+                return ai_answer.strip()
+
+        # AI couldn't answer — ask user
         prompt = f"📝 Bot needs your input for: \"{field_name}\""
         if job_title:
             prompt += f" (applying to: {job_title})"
@@ -78,27 +97,9 @@ class LinkedinBot:
             return ""
 
     def setup_driver(self):
-        from selenium import webdriver
-        from selenium.webdriver.chrome.service import Service as ChromeService
-        from webdriver_manager.chrome import ChromeDriverManager
-        options = webdriver.ChromeOptions()
-        for arg in ["--no-sandbox","--ignore-certificate-errors","--disable-extensions","--disable-gpu","--disable-dev-shm-usage","--start-maximized","--disable-blink-features=AutomationControlled","--incognito"]:
-            options.add_argument(arg)
-        options.add_experimental_option("useAutomationExtension", False)
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        if self.config.get("headless"): options.add_argument("--headless")
-        try:
-            ci = ChromeDriverManager().install()
-            folder = os.path.dirname(ci)
-            cp = os.path.join(folder, "chromedriver.exe")
-            if not os.path.exists(cp): cp = ci
-            self.driver = webdriver.Chrome(service=ChromeService(cp), options=options)
-        except Exception:
-            self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-        try:
-            from selenium_stealth import stealth
-            stealth(self.driver, languages=["en-US","en"], vendor="Google Inc.", platform="Win32", webgl_vendor="Intel Inc.", renderer="Intel Iris OpenGL Engine", fix_hairline=True)
-        except ImportError: pass
+        from browser_driver import create_driver
+        self.driver, browser_name = create_driver(headless=self.config.get("headless", False))
+        self.emit("info", f"🌐 Using {browser_name.title()} browser")
 
     def get_hash(self, s): return hashlib.md5(s.encode("utf-8")).hexdigest()
 
@@ -135,10 +136,18 @@ class LinkedinBot:
             self.driver.find_element(By.ID,"username").send_keys(self.config["linkedin_email"]); time.sleep(1)
             self.driver.find_element(By.ID,"password").send_keys(self.config["linkedin_password"]); time.sleep(1)
             self.driver.find_element(By.XPATH,'//button[@type="submit"]').click()
-            self.emit("info","⏳ Waiting for login (30s for CAPTCHA)..."); time.sleep(30)
-            self.save_cookies()
-            self.driver.get(constants.LINKEDIN_FEED); time.sleep(5)
-            if self._is_logged_in():
+            self.emit("info","⏳ Waiting for login (checking every 3s, up to 60s)...")
+            # Poll for login state instead of blind 30s wait
+            logged_in = False
+            for _ in range(20):  # 20 * 3s = 60s max
+                time.sleep(3)
+                try:
+                    self.save_cookies()
+                    self.driver.get(constants.LINKEDIN_FEED); time.sleep(2)
+                    if self._is_logged_in():
+                        logged_in = True; break
+                except: pass
+            if logged_in:
                 self.emit("success","✅ LinkedIn login OK!"); return True
             else:
                 self.emit("error","❌ Login may need manual CAPTCHA. Check browser."); return False
@@ -228,62 +237,137 @@ class LinkedinBot:
             except: tp = 1
             for pg in range(tp):
                 if not self.running or self.stats["applied"]>=mx: break
-                self.driver.get(url+f"&start={constants.JOBS_PER_PAGE*pg}"); time.sleep(random.uniform(2, constants.BOT_SPEED))
-                offers = self.driver.find_elements(By.XPATH,"//li[@data-occludable-job-id]")
-                oids = []
-                for o in offers:
-                    try:
-                        oid = o.get_attribute("data-occludable-job-id")
-                        if oid: oids.append(int(oid.split(":")[-1]))
-                    except: continue
-                try:
-                    offers2 = self.driver.find_elements(By.XPATH,"//li[@data-occludable-job-id]")
-                    aids = []
-                    for o in offers2:
-                        try:
-                            if o.find_elements(By.XPATH,".//*[contains(text(),'Applied')]"):
-                                oid = o.get_attribute("data-occludable-job-id")
-                                if oid: aids.append(int(oid.split(":")[-1]))
-                        except: continue
-                    oids = [j for j in oids if j not in aids]
-                except: pass
-                for jid in oids:
-                    if not self.running or self.stats["applied"]>=mx: break
-                    ju = f"https://www.linkedin.com/jobs/view/{jid}"
-                    self.driver.get(ju); time.sleep(random.uniform(2, constants.BOT_SPEED))
-                    self.stats["jobs_found"] += 1
-                    jt = jc = ""
-                    try: jt = self.driver.find_element(By.XPATH,"//h1[contains(@class,'job-title')]").text.strip()
+                if pg > 0:
+                    self.driver.get(url+f"&start={constants.JOBS_PER_PAGE*pg}"); time.sleep(random.uniform(2, constants.BOT_SPEED))
+
+                # Scroll down to load all job cards
+                for _ in range(3):
+                    try: self.driver.execute_script("document.querySelector('.jobs-search-results-list').scrollBy(0, 500)")
                     except:
-                        try: jt = self.driver.find_element(By.CSS_SELECTOR,"h1.t-24").text.strip()
-                        except: jt = f"Job #{jid}"
-                    try: jc = self.driver.find_element(By.XPATH,"//div[contains(@class,'job-details-jobs')]//div").text.split("\n")[0].strip()
-                    except: jc = "Unknown"
-                    if any(b in jt.lower() for b in bl_ti): self.stats["blacklisted"]+=1; self.emit("warning",f"🚫 Blacklisted: {jt}"); continue
-                    if any(b in jc.lower() for b in bl_co): self.stats["blacklisted"]+=1; self.emit("warning",f"🚫 Blacklisted: {jc}"); continue
-                    eab = None
-                    try:
-                        time.sleep(1)
-                        eab = self.driver.find_element(By.XPATH,"//div[contains(@class,'jobs-apply-button--top-card')]//button[contains(@class,'jobs-apply-button')]")
-                    except: pass
-                    if not eab: self.stats["already_applied"]+=1; self.emit("info",f"✔️ Already applied: {jt}"); continue
-                    if dry: self.stats["applied"]+=1; self.emit("success",f"🧪 DRY RUN: {jt} @ {jc}"); self.emit("stats","📊",self.stats.copy()); continue
-                    try:
-                        eab.click(); time.sleep(random.uniform(1, constants.BOT_SPEED))
-                        try:
-                            cb = self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Continue to next step']")
-                            if cb.is_displayed(): cb.click(); time.sleep(1)
+                        try: self.driver.execute_script("window.scrollBy(0, 300)")
                         except: pass
-                        self._choose_resume(); self._fill_all_fields(jt)
+                    time.sleep(0.5)
+
+                # Get job cards from the list
+                offers = self.driver.find_elements(By.XPATH,"//li[@data-occludable-job-id]")
+                if not offers:
+                    offers = self.driver.find_elements(By.CSS_SELECTOR, "li.jobs-search-results__list-item, div.job-card-container")
+                self.emit("info", f"📋 Page {pg+1}: {len(offers)} job cards")
+
+                for oi, offer in enumerate(offers):
+                    if not self.running or self.stats["applied"]>=mx: break
+                    try:
+                        # Click the job card to load details in side panel
                         try:
-                            self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Submit application']").click()
-                            time.sleep(1); self.stats["applied"]+=1; self.emit("success",f"🎉 Applied: {jt} @ {jc}")
+                            offer.click()
                         except:
-                            r = self._multi_step(jt, jc)
-                            if "applied" in r.lower(): self.stats["applied"]+=1
-                            else: self.stats["failed"]+=1
-                    except Exception as e: self.stats["failed"]+=1; self.emit("error",f"❌ Failed: {jt} — {str(e)[:50]}")
-                    self.emit("stats","📊",self.stats.copy())
+                            try: self.driver.execute_script("arguments[0].click()", offer)
+                            except: continue
+                        time.sleep(random.uniform(2, constants.BOT_SPEED))
+                        self.stats["jobs_found"] += 1
+
+                        # Get job title
+                        jt = jc = ""
+                        for sel in ["h2.job-card-list__title", "a.job-card-list__title", "h1.t-24", "h1", "a.job-card-container__link strong"]:
+                            try:
+                                el = self.driver.find_element(By.CSS_SELECTOR, sel)
+                                if el and el.text.strip():
+                                    jt = el.text.strip()[:60]; break
+                            except: continue
+                        if not jt: jt = f"Job #{oi+1}"
+                        # Get company
+                        for sel in ["span.job-card-container__primary-description", "a.job-card-container__company-name", "span.topcard__flavor"]:
+                            try:
+                                el = self.driver.find_element(By.CSS_SELECTOR, sel)
+                                if el and el.text.strip():
+                                    jc = el.text.strip()[:40]; break
+                            except: continue
+                        if not jc: jc = "Unknown"
+
+                        # Blacklist check
+                        if any(b in jt.lower() for b in bl_ti): self.stats["blacklisted"]+=1; self.emit("warning",f"🚫 Blacklisted: {jt}"); continue
+                        if any(b in jc.lower() for b in bl_co): self.stats["blacklisted"]+=1; self.emit("warning",f"🚫 Blacklisted: {jc}"); continue
+
+                        # --- Find Easy Apply button ---
+                        eab = None
+                        time.sleep(1)
+
+                        # Method 1: Scan ALL visible buttons for "Easy Apply" or "Apply" text
+                        try:
+                            all_buttons = self.driver.find_elements(By.TAG_NAME, "button")
+                            for btn in all_buttons:
+                                try:
+                                    if not btn.is_displayed() or not btn.is_enabled(): continue
+                                    btn_text = btn.text.strip().lower()
+                                    if "easy apply" in btn_text:
+                                        eab = btn; break
+                                except: continue
+                            # If no "Easy Apply" found, look for just "Apply" button
+                            if not eab:
+                                for btn in all_buttons:
+                                    try:
+                                        if not btn.is_displayed() or not btn.is_enabled(): continue
+                                        btn_text = btn.text.strip().lower()
+                                        aria = (btn.get_attribute("aria-label") or "").lower()
+                                        if btn_text == "apply" or "easy apply" in aria or "apply to" in aria:
+                                            eab = btn; break
+                                    except: continue
+                        except: pass
+
+                        # Method 2: CSS selectors
+                        if not eab:
+                            css_selectors = [
+                                "button.jobs-apply-button",
+                                "button[aria-label*='Easy Apply']",
+                                "button[aria-label*='Apply to']",
+                                "div.jobs-apply-button--top-card button",
+                                "div.jobs-s-apply button",
+                                "button[class*='jobs-apply-button']",
+                            ]
+                            for sel in css_selectors:
+                                try:
+                                    btn = self.driver.find_element(By.CSS_SELECTOR, sel)
+                                    if btn and btn.is_displayed() and btn.is_enabled():
+                                        eab = btn; break
+                                except: continue
+
+                        # Method 3: XPath
+                        if not eab:
+                            try:
+                                eab = self.driver.find_element(By.XPATH, "//button[contains(.,'Easy Apply') or contains(.,'easy apply')]")
+                                if not (eab.is_displayed() and eab.is_enabled()): eab = None
+                            except: pass
+
+                        if not eab:
+                            # Check if already applied
+                            page_text = ""
+                            try: page_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+                            except: pass
+                            if "applied" in page_text and ("ago" in page_text or "submitted" in page_text):
+                                self.stats["already_applied"]+=1
+                                self.emit("info",f"✔️ Already applied: {jt}")
+                            else:
+                                self.stats["skipped"]+=1
+                                self.emit("info",f"⏭️ No apply button: {jt}")
+                            continue
+
+                        if dry: self.stats["applied"]+=1; self.emit("success",f"🧪 DRY RUN: {jt} @ {jc}"); self.emit("stats","📊",self.stats.copy()); continue
+
+                        # --- Click Easy Apply and process all steps ---
+                        try:
+                            eab.click(); time.sleep(random.uniform(2, constants.BOT_SPEED))
+                            result = self._process_application_modal(jt, jc)
+                            if result == "applied":
+                                self.stats["applied"]+=1
+                            else:
+                                self.stats["failed"]+=1
+                        except Exception as e:
+                            self.stats["failed"]+=1; self.emit("error",f"❌ Failed: {jt} — {str(e)[:80]}")
+                            self._dismiss_modal()
+                        self.emit("stats","📊",self.stats.copy())
+                    except Exception as e:
+                        self.emit("warning",f"⚠️ Card error: {str(e)[:40]}")
+                        continue
         self.running = False
         self.emit("complete",f"✅ Done! Applied: {self.stats['applied']}",self.stats.copy())
 
@@ -315,6 +399,16 @@ class LinkedinBot:
         linkedin_url = rd.get("linkedin_url","")
         first_name = name.split()[0] if name else ""
         last_name = " ".join(name.split()[1:]) if name and len(name.split())>1 else ""
+        experience = str(rd.get("experience_years", 0))
+        education = rd.get("education", "")
+        summary = rd.get("summary", "")
+        skills_str = ", ".join(rd.get("skills", [])[:10])
+        profession = rd.get("profession", "")
+        exp_level = rd.get("experience_level", "")
+        # Determine current title from parsed data
+        current_title = ""
+        if rd.get("job_titles"):
+            current_title = rd["job_titles"][0]
 
         # Map of label keywords → values to fill
         field_map = {
@@ -324,6 +418,15 @@ class LinkedinBot:
             "last name": last_name, "surname": last_name, "family name": last_name,
             "full name": name, "city": city, "location": city,
             "current location": city, "linkedin": linkedin_url,
+            "years of experience": experience, "experience": experience,
+            "total experience": experience, "work experience": experience,
+            "education": education, "degree": education, "qualification": education,
+            "highest degree": education, "highest education": education,
+            "headline": profession or current_title,
+            "current title": current_title, "job title": current_title,
+            "current role": current_title, "current position": current_title,
+            "summary": summary, "cover letter": summary, "about": summary,
+            "skills": skills_str,
         }
 
         # Fill input[type=tel] fields (phone)
@@ -483,35 +586,184 @@ class LinkedinBot:
         except: pass
         return ""
 
-    def _multi_step(self, title, company):
+    def _process_application_modal(self, title, company):
+        """Process the entire Easy Apply modal — handles single and multi-step."""
         from selenium.webdriver.common.by import By
+        MAX_STEPS = 10
         try:
-            for step in range(7):
+            for step in range(MAX_STEPS):
+                time.sleep(1.5)  # Wait for modal page to load
+
+                # Fill current page
                 self._choose_resume()
                 self._fill_all_fields(title)
                 time.sleep(0.5)
-                # Try continue
+
+                # --- Try SUBMIT first (final page) ---
+                submit_btn = self._find_button([
+                    "button[aria-label='Submit application']",
+                    "button[aria-label='Submit']",
+                    "button[data-control-name='submit_unify']",
+                ])
+                if submit_btn:
+                    # Unfollow company if configured
+                    if not self.config.get("follow_companies"):
+                        try:
+                            for lbl in self.driver.find_elements(By.CSS_SELECTOR, "label"):
+                                if "follow" in lbl.text.lower():
+                                    lbl.click(); break
+                        except: pass
+                    submit_btn.click(); time.sleep(1.5)
+                    # Verify submission — check for success indicators
+                    try:
+                        body = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+                        if "application sent" in body or "applied" in body:
+                            self.emit("success", f"🎉 Applied: {title} @ {company}")
+                            return "applied"
+                    except: pass
+                    # If no explicit confirmation but no error, count it
+                    self.emit("success", f"🎉 Applied: {title} @ {company}")
+                    return "applied"
+
+                # --- Try REVIEW (second-to-last page) ---
+                review_btn = self._find_button([
+                    "button[aria-label='Review your application']",
+                    "button[aria-label='Review']",
+                ])
+                if review_btn:
+                    self.emit("info", f"📋 Reviewing: {title} (step {step+1})")
+                    review_btn.click(); time.sleep(1.5)
+                    continue  # Loop back to try Submit on next iteration
+
+                # --- Try CONTINUE / NEXT (intermediate pages) ---
+                next_btn = self._find_button([
+                    "button[aria-label='Continue to next step']",
+                    "button[aria-label='Next']",
+                    "button[data-easy-apply-next-button]",
+                ])
+                if next_btn:
+                    self.emit("info", f"➡️ Step {step+1}: {title}")
+                    next_btn.click(); time.sleep(1.5)
+                    continue
+
+                # --- No known button found —- try text-matching as last resort ---
+                fallback_btn = None
                 try:
-                    btn = self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Continue to next step']")
-                    if btn.is_displayed() and btn.is_enabled():
-                        btn.click(); time.sleep(1.5)
-                    else: break
-                except: break
-            # Final review
-            self._choose_resume()
-            self._fill_all_fields(title)
-            try: self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Review your application']").click(); time.sleep(1)
-            except: pass
-            if not self.config.get("follow_companies"):
-                try: self.driver.find_element(By.CSS_SELECTOR,"label[for='follow-company-checkbox']").click()
+                    all_buttons = self.driver.find_elements(By.CSS_SELECTOR,
+                        "div.jobs-easy-apply-modal button, div.jobs-easy-apply-content button, div[class*='artdeco-modal'] button"
+                    )
+                    for btn in all_buttons:
+                        try:
+                            if not btn.is_displayed() or not btn.is_enabled(): continue
+                            txt = btn.text.strip().lower()
+                            aria = (btn.get_attribute("aria-label") or "").lower()
+                            # Submit variants
+                            if "submit" in txt or "submit" in aria:
+                                if not self.config.get("follow_companies"):
+                                    try:
+                                        for lbl in self.driver.find_elements(By.CSS_SELECTOR, "label"):
+                                            if "follow" in lbl.text.lower():
+                                                lbl.click(); break
+                                    except: pass
+                                btn.click(); time.sleep(1.5)
+                                self.emit("success", f"🎉 Applied: {title} @ {company}")
+                                return "applied"
+                            # Continue/Next variants
+                            if txt in ("next", "continue") or "next step" in aria or "continue" in aria:
+                                fallback_btn = btn; break
+                            # Review
+                            if "review" in txt or "review" in aria:
+                                fallback_btn = btn; break
+                        except: continue
                 except: pass
-            self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Submit application']").click(); time.sleep(1)
-            self.emit("success",f"🎉 Applied (multi): {title} @ {company}"); return "Applied"
+
+                if fallback_btn:
+                    self.emit("info", f"➡️ Step {step+1} (fallback): {title}")
+                    fallback_btn.click(); time.sleep(1.5)
+                    continue
+
+                # Nothing found — might be stuck. Log what's visible for debugging.
+                self.emit("warning", f"⚠️ No nav button found at step {step+1} for: {title}")
+                # Try one more time after brief wait
+                time.sleep(2)
+                submit_retry = self._find_button([
+                    "button[aria-label='Submit application']",
+                    "button[aria-label='Submit']",
+                ])
+                if submit_retry:
+                    submit_retry.click(); time.sleep(1.5)
+                    self.emit("success", f"🎉 Applied (retry): {title} @ {company}")
+                    return "applied"
+
+                # Truly stuck — dismiss and move on
+                self.emit("error", f"❌ Stuck at step {step+1}: {title}")
+                self._dismiss_modal()
+                return "failed"
+
+            # Exhausted max steps
+            self.emit("error", f"❌ Too many steps ({MAX_STEPS}): {title}")
+            self._dismiss_modal()
+            return "failed"
+
         except Exception as e:
-            self.emit("error",f"❌ Multi-step fail: {title}"); 
-            try: self.driver.find_element(By.CSS_SELECTOR,"button[aria-label='Dismiss']").click()
+            self.emit("error", f"❌ Apply error: {title} — {str(e)[:80]}")
+            self._dismiss_modal()
+            return "failed"
+
+    def _find_button(self, selectors):
+        """Find first visible+enabled button from list of CSS selectors."""
+        from selenium.webdriver.common.by import By
+        for sel in selectors:
+            try:
+                btn = self.driver.find_element(By.CSS_SELECTOR, sel)
+                if btn.is_displayed() and btn.is_enabled():
+                    return btn
+            except: continue
+        return None
+
+    def _dismiss_modal(self):
+        """Safely close LinkedIn Easy Apply modal + handle discard confirmation."""
+        from selenium.webdriver.common.by import By
+        try:
+            # Step 1: Click Dismiss / X button
+            dismiss_selectors = [
+                "button[aria-label='Dismiss']",
+                "button[data-test-modal-close-btn]",
+                "button.artdeco-modal__dismiss",
+            ]
+            for sel in dismiss_selectors:
+                try:
+                    btn = self.driver.find_element(By.CSS_SELECTOR, sel)
+                    if btn.is_displayed():
+                        btn.click(); break
+                except: continue
+            time.sleep(1)
+
+            # Step 2: Handle "Discard application?" confirmation
+            discard_selectors = [
+                "button[data-control-name='discard_application_confirm_btn']",
+                "button[data-test-dialog-primary-btn]",
+            ]
+            for sel in discard_selectors:
+                try:
+                    btn = self.driver.find_element(By.CSS_SELECTOR, sel)
+                    if btn.is_displayed():
+                        btn.click(); return
+                except: continue
+            # Fallback: find button with "discard" text
+            try:
+                for btn in self.driver.find_elements(By.TAG_NAME, "button"):
+                    if "discard" in btn.text.strip().lower():
+                        btn.click(); return
             except: pass
-            return "Failed"
+            # Fallback: find button with "save" text (save & exit)
+            try:
+                for btn in self.driver.find_elements(By.TAG_NAME, "button"):
+                    txt = btn.text.strip().lower()
+                    if "save" in txt and btn.is_displayed():
+                        btn.click(); return
+            except: pass
+        except: pass
 
     def stop(self): self.running = False; self.emit("info","⏹️ Stopping...")
     def cleanup(self):

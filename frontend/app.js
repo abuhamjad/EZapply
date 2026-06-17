@@ -5,6 +5,7 @@
 const API = '';
 let eventSource = null;
 let botRunning = false;
+let statsPoller = null;
 
 // --- DOM Elements ---
 const $ = (s) => document.querySelector(s);
@@ -32,6 +33,7 @@ const valFailed = $('#valFailed');
 document.addEventListener('DOMContentLoaded', () => {
     loadResumes();
     loadConfig();
+    checkBotStatus(); // Reconnect if bot already running
 
     // Platform toggle visibility
     $('[name="platform_linkedin"]').addEventListener('change', (e) => {
@@ -127,7 +129,9 @@ async function uploadFile(file) {
         const data = await r.json();
         if (data.error) { toast(data.error, 'error'); return; }
         toast(`Resume uploaded: ${data.name}`, 'success');
-        loadResumes();
+        await loadResumes();
+        // Auto-parse after upload
+        parseResume(data.name);
     } catch (e) {
         toast('Upload failed', 'error');
     }
@@ -224,7 +228,7 @@ function getConfigFromForm() {
         linkedin_password: $('#linkedinPass').value,
         naukri_email: $('#naukriEmail').value.trim(),
         naukri_password: $('#naukriPass').value,
-        groq_api_key: $('#groqKey').value.trim(),
+
         keywords,
         location: [$('#location').value.trim() || 'India'],
         experience_levels: [$('#experience').value],
@@ -240,7 +244,9 @@ async function startBot() {
     const config = getConfigFromForm();
     if (!config.platforms.length) { toast('Select at least one platform', 'error'); return; }
     if (config.platforms.includes('linkedin') && !config.linkedin_email) { toast('Enter LinkedIn email', 'error'); return; }
+    if (config.platforms.includes('linkedin') && !config.linkedin_password) { toast('Enter LinkedIn password', 'error'); return; }
     if (config.platforms.includes('naukri') && !config.naukri_email) { toast('Enter Naukri email', 'error'); return; }
+    if (config.platforms.includes('naukri') && !config.naukri_password) { toast('Enter Naukri password', 'error'); return; }
 
     // Save config first
     await apiPost('/api/config', config);
@@ -248,7 +254,7 @@ async function startBot() {
     // Start
     startBtn.style.display = 'none';
     stopBtn.style.display = 'flex';
-    setStatus('running', 'Running...');
+    setStatus('running', 'Starting...');
 
     try {
         const result = await apiPost('/api/start', config);
@@ -259,6 +265,7 @@ async function startBot() {
         }
         botRunning = true;
         connectSSE();
+        startStatsPolling();
         toast('Bot started!', 'success');
     } catch (e) {
         toast('Start failed', 'error');
@@ -281,11 +288,57 @@ function resetUI() {
     stopBtn.style.display = 'none';
     setStatus('idle', 'Idle');
     botRunning = false;
+    stopStatsPolling();
 }
 
 function setStatus(state, text) {
     statusBadge.className = 'status-badge ' + state;
     statusText.textContent = text;
+}
+
+// --- Auto-reconnect if bot running on page load ---
+async function checkBotStatus() {
+    try {
+        const data = await apiGet('/api/status');
+        if (data.status === 'running') {
+            botRunning = true;
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'flex';
+            setStatus('running', 'Running...');
+            connectSSE();
+            startStatsPolling();
+            // Load existing log history
+            const history = await apiGet('/api/log-history');
+            if (history && history.length) {
+                history.forEach(evt => {
+                    if (evt.type === 'stats') updateStats(evt.data);
+                    else if (evt.type !== 'heartbeat') addFeedItem(evt);
+                });
+            }
+            if (data.stats) updateStats(data.stats);
+            toast('Reconnected to running bot', 'info');
+        }
+    } catch (e) { /* server not running yet */ }
+}
+
+// --- Stats Polling (fallback for missed SSE) ---
+function startStatsPolling() {
+    stopStatsPolling();
+    statsPoller = setInterval(async () => {
+        try {
+            const data = await apiGet('/api/stats');
+            if (data) updateStats(data);
+            const status = await apiGet('/api/status');
+            if (status.status === 'idle' && botRunning) {
+                resetUI();
+                toast('Bot finished!', 'success');
+            }
+        } catch (e) {}
+    }, 5000);
+}
+
+function stopStatsPolling() {
+    if (statsPoller) { clearInterval(statsPoller); statsPoller = null; }
 }
 
 // --- SSE ---

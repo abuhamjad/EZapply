@@ -1,5 +1,5 @@
 # ============================================================
-# AI Matcher — Groq AI for job matching & question answering
+# AI Matcher — AWS Bedrock Claude for job matching & question answering
 # ============================================================
 
 import json
@@ -10,43 +10,49 @@ import constants
 
 
 class AIMatcher:
-    """Uses Groq AI to match jobs to resume and answer questions."""
+    """Uses AWS Bedrock Claude to match jobs to resume and answer questions."""
 
-    def __init__(self, api_key: str) -> None:
-        self.api_key = api_key
-        self.headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
+    def __init__(self) -> None:
+        self.api_key = constants.BEDROCK_API_KEY
+        self.api_url = constants.BEDROCK_API_URL
+        self.model_id = constants.BEDROCK_MODEL_ID
 
-    def _call_groq(self, prompt: str, max_tokens: int = 512) -> str:
-        """Make a Groq API call and return the response text."""
+    def _call_bedrock(self, prompt: str, max_tokens: int = 512) -> str:
+        """Make an AWS Bedrock Claude API call and return the response text."""
         if not self.api_key:
             return ""
         try:
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
             payload = {
-                "model": constants.GROQ_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.2,
+                "anthropic_version": "bedrock-2023-05-31",
                 "max_tokens": max_tokens,
+                "temperature": 0.2,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}],
+                    }
+                ],
             }
             resp = requests.post(
-                constants.GROQ_API_URL,
-                headers=self.headers,
+                self.api_url,
+                headers=headers,
                 json=payload,
                 timeout=30,
             )
             resp.raise_for_status()
-            return resp.json()["choices"][0]["message"]["content"]
+            result = resp.json()
+            return result["content"][0]["text"]
         except Exception as e:
-            print(f"⚠️ Groq API error: {e}")
+            print(f"⚠️ Bedrock API error: {e}")
             return ""
 
     def generate_search_keywords(self, resume_data: Dict) -> List[str]:
         """Generate optimal job search keywords from resume data."""
-        if not self.api_key:
-            return resume_data.get("search_keywords", [])
-
         skills = ", ".join(resume_data.get("skills", []))
         titles = ", ".join(resume_data.get("job_titles", []))
         summary = resume_data.get("summary", "")
@@ -58,7 +64,7 @@ Skills: {skills}
 Job Titles: {titles}
 Summary: {summary}"""
 
-        result = self._call_groq(prompt, 256)
+        result = self._call_bedrock(prompt, 256)
         try:
             start = result.find("[")
             end = result.rfind("]") + 1
@@ -70,9 +76,6 @@ Summary: {summary}"""
 
     def score_job_match(self, resume_data: Dict, job_title: str, job_description: str) -> int:
         """Score how well a job matches the resume (0-100)."""
-        if not self.api_key:
-            return 50
-
         skills = ", ".join(resume_data.get("skills", []))
         prompt = f"""Rate job-resume match from 0-100. Return ONLY the number.
 
@@ -80,7 +83,7 @@ Resume Skills: {skills}
 Job Title: {job_title}
 Job Description: {job_description[:500]}"""
 
-        result = self._call_groq(prompt, 16)
+        result = self._call_bedrock(prompt, 16)
         try:
             score = int("".join(filter(str.isdigit, result[:5])))
             return min(100, max(0, score))
@@ -89,9 +92,6 @@ Job Description: {job_description[:500]}"""
 
     def answer_question(self, question: str, resume_data: Dict, options: List[str] = None) -> str:
         """Use AI to answer application questions based on resume."""
-        if not self.api_key:
-            return options[0] if options else ""
-
         skills = ", ".join(resume_data.get("skills", []))
         exp = resume_data.get("experience_years", 0)
 
@@ -109,17 +109,14 @@ Candidate Info:
 - Experience: {exp} years
 - Education: {resume_data.get('education', 'Not specified')}"""
 
-        result = self._call_groq(prompt, 128)
+        result = self._call_bedrock(prompt, 128)
         return result.strip() if result else (options[0] if options else "")
 
     def generate_cover_note(self, resume_data: Dict, job_title: str, company: str) -> str:
         """Generate a short cover note for the application."""
-        if not self.api_key:
-            return ""
-
         skills = ", ".join(resume_data.get("skills", [])[:5])
         prompt = f"""Write a 2-3 sentence cover note for applying to {job_title} at {company}.
 Mention relevant skills: {skills}
 Keep it professional and concise. Return ONLY the note text."""
 
-        return self._call_groq(prompt, 200).strip()
+        return self._call_bedrock(prompt, 200).strip()

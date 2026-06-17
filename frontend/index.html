@@ -156,10 +156,13 @@
                             <input type="email" class="form-input" id="naukriEmail" placeholder="Naukri Email" autocomplete="off">
                             <input type="password" class="form-input" id="naukriPass" placeholder="Naukri Password" autocomplete="off">
                         </div>
-                        <!-- Groq API -->
+                        <!-- AI Status -->
                         <div class="form-group">
-                            <label class="form-label">Groq API Key</label>
-                            <input type="password" class="form-input" id="groqKey" placeholder="gsk_..." autocomplete="off">
+                            <label class="form-label">AI Engine</label>
+                            <div class="ai-status-badge" id="aiStatus">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                <span>AWS Bedrock Claude — Active</span>
+                            </div>
                         </div>
                         <!-- Keywords -->
                         <div class="form-group">

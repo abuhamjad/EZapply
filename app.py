@@ -98,8 +98,7 @@ def api_parse_resume():
     text = extract_text(fpath)
     if not text:
         return jsonify({"error": "Could not extract text"}), 400
-    api_key = current_config.get("groq_api_key", "")
-    parsed = parse_resume_with_ai(text, api_key)
+    parsed = parse_resume_with_ai(text)
     parsed_resume_cache[fname] = parsed
     return jsonify(parsed)
 
@@ -110,7 +109,7 @@ def api_get_config():
     safe["naukri_email"] = current_config.get("naukri_email", "")
     safe["has_linkedin_pass"] = bool(current_config.get("linkedin_password"))
     safe["has_naukri_pass"] = bool(current_config.get("naukri_password"))
-    safe["has_groq_key"] = bool(current_config.get("groq_api_key"))
+    safe["ai_enabled"] = bool(constants.BEDROCK_API_KEY)
     return jsonify(safe)
 
 @app.route("/api/config", methods=["POST"])
@@ -141,8 +140,7 @@ def api_start():
             fpath = os.path.join(RESUMES_DIR, target)
             if os.path.exists(fpath):
                 text = extract_text(fpath)
-                api_key = current_config.get("groq_api_key", "")
-                resume_data = parse_resume_with_ai(text, api_key)
+                resume_data = parse_resume_with_ai(text)
                 parsed_resume_cache[target] = resume_data
         # Set resume file path for upload
         current_config["resume_path"] = os.path.join(RESUMES_DIR, target)
@@ -234,7 +232,11 @@ def api_delete_answer():
     return jsonify({"error": "File not found"}), 404
 
 if __name__ == "__main__":
+    import webbrowser, threading
     print("\n🤖 Job Apply Bot Server Starting...")
+    print(f"🧠 AI: AWS Bedrock Claude ({constants.BEDROCK_MODEL_ID})")
     print("📍 Dashboard: http://localhost:5000")
     print("📂 Put resumes in: ./resumes/\n")
+    # Auto-open dashboard in system default browser
+    threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5000")).start()
     app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)

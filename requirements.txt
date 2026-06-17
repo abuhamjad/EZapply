@@ -1,8 +1,35 @@
-flask>=3.0.0
-flask-cors>=4.0.0
+# ============================================================
+# JobPilot AI — Python Dependencies
+# ============================================================
+
+# Web framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Security
+cryptography>=42.0.0
+
+# AI / HTTP
+requests>=2.31.0
+
+# Browser automation (existing — will migrate to Playwright later)
 selenium>=4.15.0
 webdriver-manager>=4.0.0
 selenium-stealth>=1.0.6
+
+# Resume parsing
 PyPDF2>=3.0.0
 python-docx>=1.0.0
-requests>=2.31.0
+
+# Logging
+loguru>=0.7.0
+
+# CORS
+python-multipart>=0.0.6
+
+# Legacy (kept for backward compatibility)
+flask>=3.0.0
+flask-cors>=4.0.0

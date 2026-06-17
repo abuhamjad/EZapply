@@ -1,11 +1,29 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
 
-cookies/
-resumes/
-
-.env
-*.pkl
-
+# Auto-generated data
 user_answers.json
+cookies/
+data/
+naukri_login_debug.png
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+venv/
+env/
