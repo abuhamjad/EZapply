@@ -124,6 +124,8 @@ class LinkedinBot:
 
     def login(self):
         from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
         self.emit("info","🔄 Connecting to LinkedIn...")
         self.driver.get(constants.LINKEDIN_BASE); time.sleep(3)
         self.load_cookies()
@@ -131,26 +133,116 @@ class LinkedinBot:
         if self._is_logged_in():
             self.emit("success","✅ LinkedIn session restored!"); return True
         self.emit("info","🔑 Logging into LinkedIn...")
-        self.driver.get(constants.LINKEDIN_LOGIN); time.sleep(3)
+        # Try login page up to 3 times (LinkedIn sometimes redirects)
+        fields_found = False
+        for retry in range(3):
+            self.driver.get(constants.LINKEDIN_LOGIN)
+            try:
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located((By.ID, "username"))
+                )
+                fields_found = True
+                break
+            except:
+                self.emit("info", f"⏳ Login page loading... retry {retry+1}/3")
+                time.sleep(3)
+                # Check if already logged in after redirect
+                if self._is_logged_in():
+                    self.save_cookies()
+                    self.emit("success","✅ LinkedIn session restored!"); return True
+
+        if not fields_found:
+            # Last resort: check if we landed on a non-login page
+            current = self.driver.current_url.lower()
+            if self._is_logged_in():
+                self.save_cookies()
+                self.emit("success","✅ LinkedIn already logged in!"); return True
+            self.emit("error","❌ Can't find login fields. LinkedIn may have changed layout.")
+            return False
+
         try:
-            self.driver.find_element(By.ID,"username").send_keys(self.config["linkedin_email"]); time.sleep(1)
-            self.driver.find_element(By.ID,"password").send_keys(self.config["linkedin_password"]); time.sleep(1)
-            self.driver.find_element(By.XPATH,'//button[@type="submit"]').click()
-            self.emit("info","⏳ Waiting for login (checking every 3s, up to 60s)...")
-            # Poll for login state instead of blind 30s wait
+            # Fill credentials with explicit waits
+            username_el = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "username"))
+            )
+            username_el.clear()
+            username_el.send_keys(self.config["linkedin_email"])
+            time.sleep(0.5)
+
+            password_el = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "password"))
+            )
+            password_el.clear()
+            password_el.send_keys(self.config["linkedin_password"])
+            time.sleep(0.5)
+
+            # Click submit — try multiple selectors
+            submit_btn = None
+            for sel in [
+                (By.XPATH, '//button[@type="submit"]'),
+                (By.CSS_SELECTOR, 'button.btn__primary--large'),
+                (By.CSS_SELECTOR, 'button[data-litms-control-urn="login-submit"]'),
+            ]:
+                try:
+                    submit_btn = self.driver.find_element(*sel)
+                    if submit_btn.is_displayed(): break
+                except: continue
+            if submit_btn:
+                submit_btn.click()
+            else:
+                self.emit("error","❌ Submit button not found"); return False
+
+            self.emit("info","⏳ Waiting for login + 2FA (up to 3 min)...")
+            # Poll for login WITHOUT navigating away — keeps 2FA page alive
             logged_in = False
-            for _ in range(20):  # 20 * 3s = 60s max
+            notified_2fa = False
+            for attempt in range(60):  # 60 * 3s = 180s (3 min) for 2FA
                 time.sleep(3)
                 try:
-                    self.save_cookies()
-                    self.driver.get(constants.LINKEDIN_FEED); time.sleep(2)
-                    if self._is_logged_in():
-                        logged_in = True; break
+                    current_url = self.driver.current_url.lower()
+                    # Detect 2FA / challenge / verification pages
+                    is_challenge = any(kw in current_url for kw in [
+                        "checkpoint", "challenge", "two-step-verification",
+                        "security-verification", "uas/login-submit",
+                        "add-phone", "phone-verification",
+                    ])
+                    if is_challenge and not notified_2fa:
+                        self.emit("info", "🔐 2FA/verification detected. Complete it in browser...")
+                        notified_2fa = True
+                        continue
+                    if is_challenge:
+                        continue  # Stay on page, don't navigate away
+                    # If we're past the login page, check if logged in
+                    if "/feed" in current_url or "/mynetwork" in current_url or "/jobs" in current_url:
+                        self.save_cookies()
+                        logged_in = True
+                        break
+                    # Still on login page — credentials might be wrong
+                    if "/login" in current_url and attempt > 5:
+                        # Check for error messages on page
+                        try:
+                            error_el = self.driver.find_element(By.CSS_SELECTOR,
+                                "div[role='alert'], div.form__label--error, p.form__label--error, "
+                                "#error-for-password, #error-for-username, div.alert-content"
+                            )
+                            if error_el and error_el.text.strip():
+                                self.emit("error", f"❌ Login error: {error_el.text.strip()[:80]}")
+                                return False
+                        except:
+                            pass
+                    # Unknown page — periodically check if logged in
+                    if attempt > 0 and attempt % 10 == 0 and not is_challenge:
+                        self.driver.get(constants.LINKEDIN_FEED)
+                        time.sleep(3)
+                        if self._is_logged_in():
+                            self.save_cookies()
+                            logged_in = True
+                            break
                 except: pass
             if logged_in:
                 self.emit("success","✅ LinkedIn login OK!"); return True
             else:
-                self.emit("error","❌ Login may need manual CAPTCHA. Check browser."); return False
+                self.emit("error","❌ Login timed out. Complete 2FA or check credentials."); return False
         except Exception as e:
             self.emit("error",f"❌ Login error: {str(e)[:60]}"); return False
 
@@ -592,20 +684,36 @@ class LinkedinBot:
         MAX_STEPS = 10
         try:
             for step in range(MAX_STEPS):
-                time.sleep(1.5)  # Wait for modal page to load
+                time.sleep(2)  # Wait for modal page to load
 
                 # Fill current page
                 self._choose_resume()
                 self._fill_all_fields(title)
                 time.sleep(0.5)
 
-                # --- Try SUBMIT first (final page) ---
-                submit_btn = self._find_button([
-                    "button[aria-label='Submit application']",
-                    "button[aria-label='Submit']",
-                    "button[data-control-name='submit_unify']",
-                ])
-                if submit_btn:
+                # --- Scan ALL visible buttons for action keywords ---
+                action = self._find_modal_action_button()
+
+                if action is None:
+                    # Wait a bit more, modal might still be loading
+                    time.sleep(2)
+                    action = self._find_modal_action_button()
+
+                if action is None:
+                    # Debug: log visible buttons
+                    self._debug_log_buttons()
+                    self.emit("warning", f"⚠️ No nav button at step {step+1}: {title}")
+                    time.sleep(2)
+                    # Final retry
+                    action = self._find_modal_action_button()
+                    if action is None:
+                        self.emit("error", f"❌ Stuck at step {step+1}: {title}")
+                        self._dismiss_modal()
+                        return "failed"
+
+                btn, action_type = action
+
+                if action_type == "submit":
                     # Unfollow company if configured
                     if not self.config.get("follow_companies"):
                         try:
@@ -613,92 +721,22 @@ class LinkedinBot:
                                 if "follow" in lbl.text.lower():
                                     lbl.click(); break
                         except: pass
-                    submit_btn.click(); time.sleep(1.5)
-                    # Verify submission — check for success indicators
+                    btn.click(); time.sleep(2)
+                    # Dismiss any post-apply modal
                     try:
-                        body = self.driver.find_element(By.TAG_NAME, "body").text.lower()
-                        if "application sent" in body or "applied" in body:
-                            self.emit("success", f"🎉 Applied: {title} @ {company}")
-                            return "applied"
+                        dismiss = self.driver.find_elements(By.CSS_SELECTOR,
+                            "button[aria-label='Dismiss'], button.artdeco-modal__dismiss"
+                        )
+                        for d in dismiss:
+                            if d.is_displayed():
+                                d.click(); break
                     except: pass
-                    # If no explicit confirmation but no error, count it
                     self.emit("success", f"🎉 Applied: {title} @ {company}")
                     return "applied"
-
-                # --- Try REVIEW (second-to-last page) ---
-                review_btn = self._find_button([
-                    "button[aria-label='Review your application']",
-                    "button[aria-label='Review']",
-                ])
-                if review_btn:
-                    self.emit("info", f"📋 Reviewing: {title} (step {step+1})")
-                    review_btn.click(); time.sleep(1.5)
-                    continue  # Loop back to try Submit on next iteration
-
-                # --- Try CONTINUE / NEXT (intermediate pages) ---
-                next_btn = self._find_button([
-                    "button[aria-label='Continue to next step']",
-                    "button[aria-label='Next']",
-                    "button[data-easy-apply-next-button]",
-                ])
-                if next_btn:
+                elif action_type in ("next", "continue", "review"):
                     self.emit("info", f"➡️ Step {step+1}: {title}")
-                    next_btn.click(); time.sleep(1.5)
+                    btn.click(); time.sleep(1.5)
                     continue
-
-                # --- No known button found —- try text-matching as last resort ---
-                fallback_btn = None
-                try:
-                    all_buttons = self.driver.find_elements(By.CSS_SELECTOR,
-                        "div.jobs-easy-apply-modal button, div.jobs-easy-apply-content button, div[class*='artdeco-modal'] button"
-                    )
-                    for btn in all_buttons:
-                        try:
-                            if not btn.is_displayed() or not btn.is_enabled(): continue
-                            txt = btn.text.strip().lower()
-                            aria = (btn.get_attribute("aria-label") or "").lower()
-                            # Submit variants
-                            if "submit" in txt or "submit" in aria:
-                                if not self.config.get("follow_companies"):
-                                    try:
-                                        for lbl in self.driver.find_elements(By.CSS_SELECTOR, "label"):
-                                            if "follow" in lbl.text.lower():
-                                                lbl.click(); break
-                                    except: pass
-                                btn.click(); time.sleep(1.5)
-                                self.emit("success", f"🎉 Applied: {title} @ {company}")
-                                return "applied"
-                            # Continue/Next variants
-                            if txt in ("next", "continue") or "next step" in aria or "continue" in aria:
-                                fallback_btn = btn; break
-                            # Review
-                            if "review" in txt or "review" in aria:
-                                fallback_btn = btn; break
-                        except: continue
-                except: pass
-
-                if fallback_btn:
-                    self.emit("info", f"➡️ Step {step+1} (fallback): {title}")
-                    fallback_btn.click(); time.sleep(1.5)
-                    continue
-
-                # Nothing found — might be stuck. Log what's visible for debugging.
-                self.emit("warning", f"⚠️ No nav button found at step {step+1} for: {title}")
-                # Try one more time after brief wait
-                time.sleep(2)
-                submit_retry = self._find_button([
-                    "button[aria-label='Submit application']",
-                    "button[aria-label='Submit']",
-                ])
-                if submit_retry:
-                    submit_retry.click(); time.sleep(1.5)
-                    self.emit("success", f"🎉 Applied (retry): {title} @ {company}")
-                    return "applied"
-
-                # Truly stuck — dismiss and move on
-                self.emit("error", f"❌ Stuck at step {step+1}: {title}")
-                self._dismiss_modal()
-                return "failed"
 
             # Exhausted max steps
             self.emit("error", f"❌ Too many steps ({MAX_STEPS}): {title}")
@@ -710,14 +748,161 @@ class LinkedinBot:
             self._dismiss_modal()
             return "failed"
 
+    def _find_modal_action_button(self):
+        """Find the primary action button in the Easy Apply modal.
+        Returns (button_element, action_type) or None.
+        action_type is one of: 'submit', 'review', 'next', 'continue'
+        """
+        from selenium.webdriver.common.by import By
+
+        # Strategy 1: Find buttons inside modal footer (most reliable)
+        footer_selectors = [
+            "div.jobs-easy-apply-modal footer button",
+            "div.jobs-easy-apply-content footer button",
+            "div[class*='artdeco-modal'] footer button",
+            "div.jobs-easy-apply-modal div[class*='footer'] button",
+            "div[class*='artdeco-modal'] div[class*='footer'] button",
+            "div.jobs-easy-apply-modal button[class*='primary']",
+            "div[class*='artdeco-modal'] button[class*='primary']",
+        ]
+
+        candidates = []
+        seen_ids = set()
+        for sel in footer_selectors:
+            try:
+                btns = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                for btn in btns:
+                    bid = id(btn)
+                    if bid in seen_ids: continue
+                    seen_ids.add(bid)
+                    if btn.is_displayed() and btn.is_enabled():
+                        candidates.append(btn)
+            except: continue
+
+        # Strategy 2: Broader — all buttons in modal
+        if not candidates:
+            modal_selectors = [
+                "div.jobs-easy-apply-modal button",
+                "div.jobs-easy-apply-content button",
+                "div[class*='artdeco-modal'] button",
+            ]
+            for sel in modal_selectors:
+                try:
+                    btns = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                    for btn in btns:
+                        bid = id(btn)
+                        if bid in seen_ids: continue
+                        seen_ids.add(bid)
+                        if btn.is_displayed() and btn.is_enabled():
+                            candidates.append(btn)
+                except: continue
+
+        # Strategy 3: aria-label based (old selectors still work sometimes)
+        aria_selectors = {
+            "button[aria-label='Submit application']": "submit",
+            "button[aria-label='Submit']": "submit",
+            "button[data-control-name='submit_unify']": "submit",
+            "button[aria-label='Review your application']": "review",
+            "button[aria-label='Review']": "review",
+            "button[aria-label='Continue to next step']": "next",
+            "button[aria-label='Next']": "next",
+            "button[data-easy-apply-next-button]": "next",
+        }
+        for sel, atype in aria_selectors.items():
+            try:
+                btn = self.driver.find_element(By.CSS_SELECTOR, sel)
+                if btn.is_displayed() and btn.is_enabled():
+                    return (btn, atype)
+            except: continue
+
+        # Now classify candidates by text content
+        # Priority: submit > review > next/continue
+        submit_btn = None
+        review_btn = None
+        next_btn = None
+
+        for btn in candidates:
+            try:
+                txt = btn.text.strip().lower()
+                aria = (btn.get_attribute("aria-label") or "").lower()
+                classes = (btn.get_attribute("class") or "").lower()
+                combined = f"{txt} {aria}"
+
+                # Skip dismiss/close/back buttons
+                if any(skip in combined for skip in ["dismiss", "close", "back", "cancel", "save & exit"]):
+                    continue
+                # Skip tiny icon-only buttons (X buttons etc)
+                if not txt and "dismiss" in aria:
+                    continue
+
+                if "submit" in combined:
+                    submit_btn = btn
+                elif "review" in combined:
+                    review_btn = btn
+                elif any(kw in combined for kw in ["next", "continue", "weiter", "siguiente"]):
+                    next_btn = btn
+                elif "primary" in classes and txt and txt not in ("dismiss", "close", "x"):
+                    # Primary-styled button with text — likely the action button
+                    if not next_btn:
+                        next_btn = btn
+            except: continue
+
+        if submit_btn:
+            return (submit_btn, "submit")
+        if review_btn:
+            return (review_btn, "review")
+        if next_btn:
+            return (next_btn, "next")
+
+        # Strategy 4: XPath text search
+        xpath_map = [
+            ("//button[contains(translate(.,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'submit')]", "submit"),
+            ("//button[contains(translate(.,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'review')]", "review"),
+            ("//button[contains(translate(.,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next')]", "next"),
+            ("//button[contains(translate(.,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue')]", "continue"),
+        ]
+        for xpath, atype in xpath_map:
+            try:
+                btn = self.driver.find_element(By.XPATH, xpath)
+                if btn.is_displayed() and btn.is_enabled():
+                    # Make sure it's inside a modal
+                    parent_html = self.driver.execute_script(
+                        "return arguments[0].closest('[class*=modal], [class*=artdeco-modal], [class*=easy-apply]') !== null", btn
+                    )
+                    if parent_html:
+                        return (btn, atype)
+            except: continue
+
+        return None
+
+    def _debug_log_buttons(self):
+        """Log all visible buttons for debugging stuck modals."""
+        from selenium.webdriver.common.by import By
+        try:
+            all_btns = self.driver.find_elements(By.TAG_NAME, "button")
+            visible = []
+            for btn in all_btns:
+                try:
+                    if not btn.is_displayed(): continue
+                    txt = btn.text.strip()[:30]
+                    aria = (btn.get_attribute("aria-label") or "")[:30]
+                    cls = (btn.get_attribute("class") or "")[:40]
+                    if txt or aria:
+                        visible.append(f"[{txt}|{aria}|{cls}]")
+                except: continue
+            if visible:
+                self.emit("info", f"🔍 Buttons: {' '.join(visible[:8])}")
+        except: pass
+
     def _find_button(self, selectors):
         """Find first visible+enabled button from list of CSS selectors."""
         from selenium.webdriver.common.by import By
         for sel in selectors:
             try:
-                btn = self.driver.find_element(By.CSS_SELECTOR, sel)
-                if btn.is_displayed() and btn.is_enabled():
-                    return btn
+                btns = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                for btn in btns:
+                    if btn.is_displayed() and btn.is_enabled():
+                        return btn
             except: continue
         return None
 
@@ -730,13 +915,27 @@ class LinkedinBot:
                 "button[aria-label='Dismiss']",
                 "button[data-test-modal-close-btn]",
                 "button.artdeco-modal__dismiss",
+                "button[class*='artdeco-modal__dismiss']",
             ]
+            dismissed = False
             for sel in dismiss_selectors:
                 try:
-                    btn = self.driver.find_element(By.CSS_SELECTOR, sel)
-                    if btn.is_displayed():
-                        btn.click(); break
+                    btns = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                    for btn in btns:
+                        if btn.is_displayed():
+                            btn.click(); dismissed = True; break
+                    if dismissed: break
                 except: continue
+
+            # Fallback: find any button with dismiss/close aria-label
+            if not dismissed:
+                try:
+                    for btn in self.driver.find_elements(By.TAG_NAME, "button"):
+                        aria = (btn.get_attribute("aria-label") or "").lower()
+                        if any(kw in aria for kw in ["dismiss", "close"]) and btn.is_displayed():
+                            btn.click(); dismissed = True; break
+                except: pass
+
             time.sleep(1)
 
             # Step 2: Handle "Discard application?" confirmation
@@ -753,7 +952,8 @@ class LinkedinBot:
             # Fallback: find button with "discard" text
             try:
                 for btn in self.driver.find_elements(By.TAG_NAME, "button"):
-                    if "discard" in btn.text.strip().lower():
+                    txt = btn.text.strip().lower()
+                    if "discard" in txt and btn.is_displayed():
                         btn.click(); return
             except: pass
             # Fallback: find button with "save" text (save & exit)

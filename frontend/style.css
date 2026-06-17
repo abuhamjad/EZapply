@@ -347,6 +347,68 @@ main {
 
 .feed-actions { display: flex; gap: 6px; }
 
+/* --- Sign In Section --- */
+.signin-section {
+    margin-bottom: 16px;
+    text-align: center;
+}
+.signin-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+}
+.signin-buttons {
+    display: flex;
+    gap: 12px;
+}
+.btn-signin {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+}
+.btn-signin::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: linear-gradient(rgba(255,255,255,0.15), transparent);
+}
+.btn-signin:hover::before { opacity: 1; }
+
+.btn-linkedin {
+    background: linear-gradient(135deg, #0A66C2 0%, #004182 100%);
+    box-shadow: 0 4px 20px rgba(10, 102, 194, 0.4);
+}
+.btn-linkedin:hover {
+    box-shadow: 0 6px 30px rgba(10, 102, 194, 0.6);
+    transform: translateY(-2px);
+}
+
+.btn-naukri {
+    background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+}
+.btn-naukri:hover {
+    box-shadow: 0 6px 30px rgba(124, 58, 237, 0.6);
+    transform: translateY(-2px);
+}
+
 /* --- Action Bar --- */
 .action-bar {
     display: flex; gap: 12px; margin-top: 16px;

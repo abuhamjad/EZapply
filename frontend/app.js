@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     $('#clearAllAnswers').addEventListener('click', clearAllAnswers);
     loadSavedAnswers();
+
+    // Sign-in buttons
+    $('#signinLinkedin').addEventListener('click', () => signinRedirect('linkedin'));
+    $('#signinNaukri').addEventListener('click', () => signinRedirect('naukri'));
 });
 
 // --- API Calls ---
@@ -254,6 +258,7 @@ async function startBot() {
     // Start
     startBtn.style.display = 'none';
     stopBtn.style.display = 'flex';
+    $('#signinSection').style.display = 'none';
     setStatus('running', 'Starting...');
 
     try {
@@ -286,6 +291,7 @@ async function stopBot() {
 function resetUI() {
     startBtn.style.display = 'flex';
     stopBtn.style.display = 'none';
+    $('#signinSection').style.display = 'block';
     setStatus('idle', 'Idle');
     botRunning = false;
     stopStatsPolling();
@@ -300,11 +306,12 @@ function setStatus(state, text) {
 async function checkBotStatus() {
     try {
         const data = await apiGet('/api/status');
-        if (data.status === 'running') {
+        if (data.status === 'running' || data.status === 'signing_in') {
             botRunning = true;
             startBtn.style.display = 'none';
             stopBtn.style.display = 'flex';
-            setStatus('running', 'Running...');
+            $('#signinSection').style.display = 'none';
+            setStatus('running', data.status === 'signing_in' ? 'Signing in...' : 'Running...');
             connectSSE();
             startStatsPolling();
             // Load existing log history
@@ -329,6 +336,14 @@ function startStatsPolling() {
             const data = await apiGet('/api/stats');
             if (data) updateStats(data);
             const status = await apiGet('/api/status');
+            if (status.status === 'running' && !botRunning) {
+                // Transitioned from signing_in to running
+                botRunning = true;
+                setStatus('running', 'Running...');
+            }
+            if (status.status === 'signing_in') {
+                setStatus('running', 'Waiting for sign-in...');
+            }
             if (status.status === 'idle' && botRunning) {
                 resetUI();
                 toast('Bot finished!', 'success');
@@ -577,5 +592,34 @@ async function clearAllAnswers() {
         loadSavedAnswers();
     } catch (e) {
         toast('Clear failed', 'error');
+    }
+}
+
+// --- Sign-In Redirect Flow ---
+async function signinRedirect(platform) {
+    const config = getConfigFromForm();
+    // Save config
+    await apiPost('/api/config', config);
+
+    // Disable buttons, show signing in
+    startBtn.style.display = 'none';
+    stopBtn.style.display = 'flex';
+    $('#signinSection').style.display = 'none';
+    setStatus('running', `Signing in to ${platform}...`);
+
+    try {
+        const result = await apiPost('/api/signin', { platform, ...config });
+        if (result.error) {
+            toast(result.error, 'error');
+            resetUI();
+            return;
+        }
+        botRunning = true;
+        connectSSE();
+        startStatsPolling();
+        toast(`${platform} sign-in page opened!`, 'success');
+    } catch (e) {
+        toast('Sign-in failed', 'error');
+        resetUI();
     }
 }

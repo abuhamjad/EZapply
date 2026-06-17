@@ -150,6 +150,36 @@ def api_start():
     result = bot_manager.start(current_config, resume_data)
     return jsonify(result)
 
+@app.route("/api/signin", methods=["POST"])
+def api_signin():
+    data = request.json or {}
+    platform = data.get("platform", "")
+    if platform not in ("linkedin", "naukri"):
+        return jsonify({"error": "Invalid platform"}), 400
+    # Build config from request
+    for k, v in data.items():
+        if k in current_config:
+            current_config[k] = v
+    # Get resume data
+    resume_data = {}
+    resumes = list_resumes(RESUMES_DIR)
+    if resumes:
+        preferred = current_config.get("preferred_resume", "")
+        target = preferred if preferred else resumes[0]["name"]
+        if target in parsed_resume_cache:
+            resume_data = parsed_resume_cache[target]
+        else:
+            fpath = os.path.join(RESUMES_DIR, target)
+            if os.path.exists(fpath):
+                text = extract_text(fpath)
+                resume_data = parse_resume_with_ai(text)
+                parsed_resume_cache[target] = resume_data
+        current_config["resume_path"] = os.path.join(RESUMES_DIR, target)
+    if not current_config.get("keywords") and resume_data.get("search_keywords"):
+        current_config["keywords"] = resume_data["search_keywords"]
+    result = bot_manager.signin_redirect(platform, current_config, resume_data)
+    return jsonify(result)
+
 @app.route("/api/stop", methods=["POST"])
 def api_stop():
     return jsonify(bot_manager.stop())
