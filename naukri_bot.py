@@ -1,4 +1,3 @@
-# Naukri.com Bot — Automated job apply via Selenium
 import hashlib, os, pickle, random, time, queue
 from typing import Dict, List
 import constants
