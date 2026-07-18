@@ -290,35 +290,134 @@ Create the backend architecture that will power the existing frontend without ch
 The backend foundation is clean, well-structured, and follows Architecture.md exactly. All infrastructure (configuration, logging, database, API routing, dependency injection) is properly tested and ready for implementing business features. The backend audit confirmed zero architectural violations and no dead code beyond the removed router file.
 
 ### Next Session
-
+ 
 Begin v0.6 Data & Persistence by implementing SQLAlchemy models and the repository layer.
-
+ 
 ---
-
-# Upcoming Session
-
-## Version
-
-v0.6.0 — Data & Persistence
-
+ 
+## 2026-07 — v0.6.0 Data & Persistence
+ 
 ### Objective
-
+ 
 Implement persistent local storage and database integration for the backend.
-
+ 
+### Work Completed
+ 
+- Configured SQLite database integration with automatic schema initialization.
+- Defined SQLAlchemy models mapping to core tables (profiles, resumes, templates, search_keywords, runs, events, applications, settings).
+- Established EZApplyRepository implementing standard CRUD wrappers with safe connection handling.
+- Integrated profile data persistence and local storage directories for uploaded resumes.
+ 
+### Files / Modules Affected
+ 
+- backend/app/database/engine.py
+- backend/app/models/entities.py
+- backend/app/repositories/ezapply_repository.py
+ 
+### Architectural Decisions
+ 
+- Repository pattern implemented to abstract direct SQLAlchemy ORM queries from service business layers.
+- Automatic SQLite file migration/creation on startup to minimize desktop configuration overhead.
+ 
+### Notes
+ 
+Database models are complete. Ready for API endpoint integration.
+ 
+### Next Session
+ 
+Begin v0.7 Frontend–Backend Integration.
+ 
+---
+ 
+## 2026-07 — v0.7.0 Frontend–Backend Integration
+ 
+### Objective
+ 
+Replace frontend static mock data with live FastAPI communication.
+ 
+### Work Completed
+ 
+- Implemented API routers for Saved Information, Dashboard, Analytics, and Automation endpoints.
+- Re-architected frontend React Custom Hooks (`useDashboard`, `useSavedInfo`, `useAnalytics`, `useAutomation`) to fetch from local REST endpoints.
+- Resolved type mismatches between backend JSON responses and frontend TypeScript models.
+- Set up global backend error handling for HTTP exception translation.
+ 
+### Files / Modules Affected
+ 
+- backend/app/api/routes/ (dashboard, saved_info, analytics, automation)
+- frontend/src/app/core/services/ (DashboardService, SavedInfoService, AnalyticsService, AutomationService)
+- frontend/src/app/core/hooks/ (useDashboard, useSavedInfo, useAnalytics, useAutomation)
+ 
+### Architectural Decisions
+ 
+- Unified HTTP request utility created in the frontend (`api.ts`) to manage base URLs and serialize requests.
+- Strict mapping between SQLite schemas and REST JSON responses via Pydantic response models.
+ 
+### Notes
+ 
+All mock states have been replaced. The system communicates end-to-end.
+ 
+### Next Session
+ 
+Begin v0.8 Automation Engine.
+ 
+---
+ 
+## 2026-07 — v0.8.0 Automation Engine
+ 
+### Objective
+ 
+Integrate the browser automation bot runner, manual login flows, and live logging projection.
+ 
+### Work Completed
+ 
+- Hooked Bot Control actions (start, pause, stop) to local `BotManager` runner orchestration.
+- Setup event queue monitoring daemon inside `LegacyBotService` to capture web action logs.
+- Added FastAPI event broker route (`/api/automation/events`) implementing Server-Sent Events (SSE) to stream logs continuously to the frontend terminal container.
+- Resolved runtime UI page crash on navigation.
+- Fixed bot control error responses to correctly handle sign-in phase blocks.
+ 
+### Files / Modules Affected
+ 
+- bot_manager.py
+- backend/app/services/legacy_bot_service.py
+- backend/app/api/routes/automation.py
+- frontend/src/app/pages/BotControlPage.tsx
+- frontend/src/app/App.tsx
+ 
+### Architectural Decisions
+ 
+- Daemon threading adopted for Selenium polling monitoring to ensure web requests return immediately while execution occurs in the background.
+- Server-Sent Events selected for terminal logs streaming to avoid polling-overhead.
+ 
+### Notes
+ 
+Automation integration is complete. Live stats and logs are working properly.
+ 
+### Next Session
+ 
+Begin v0.9 Intelligence Layer.
+ 
+---
+ 
+# Upcoming Session
+ 
+## Version
+ 
+v0.9.0 — Intelligence Layer
+ 
+### Objective
+ 
+Implement automated resume parsing and intelligent form fields mapping for job applications.
+ 
 ### Planned Work
-
-- Define SQLAlchemy models for core entities.
-- Create repository layer for data access.
-- Implement database migrations.
-- Set up persistent configuration storage.
-- Implement resume file storage.
-- Implement application history storage.
-- Create database initialization logic.
-
+ 
+- Integrate a PDF parser utility for resume content extraction.
+- Create intelligence heuristics to match form question fields to database profile properties.
+- Cache learned questions/answers to SQLite database tables.
+ 
 ### Success Criteria
-
-- Database models defined.
-- Repository layer implemented.
-- Migrations configured.
-- Persistent storage verified.
-- Backend ready for business logic implementation.
+ 
+- Text extracted accurately from resumes.
+- Smart matching accurately answers form fields.
+- System asks user input for unknown form queries.

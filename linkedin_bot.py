@@ -1,5 +1,5 @@
 # LinkedIn Bot — Automated Easy Apply via Selenium
-import hashlib, math, os, pickle, random, time, queue
+import hashlib, math, os, pickle, random, time, queue, threading
 from typing import Optional, Dict, List
 import constants
 from ai_matcher import AIMatcher
@@ -14,6 +14,7 @@ class LinkedinBot:
         self.resume_data = resume_data or {}
         self.driver = None
         self.running = False
+        self._pause_event = threading.Event()
         self.stats = {"jobs_found":0,"applied":0,"skipped":0,"blacklisted":0,"already_applied":0,"failed":0}
         self._user_answers = self._load_saved_answers()
         # Initialize AI matcher for auto-answering
@@ -43,6 +44,18 @@ class LinkedinBot:
 
     def emit(self, etype, msg, data=None):
         self.event_queue.put({"type":etype,"message":msg,"data":data or {},"timestamp":time.strftime("%H:%M:%S")})
+
+    def pause(self):
+        self._pause_event.set()
+        self.emit("info", "Automation paused at a safe point")
+
+    def resume(self):
+        self._pause_event.clear()
+        self.emit("info", "Automation resumed")
+
+    def wait_if_paused(self):
+        while self.running and self._pause_event.is_set():
+            time.sleep(0.25)
 
     def ask_user(self, field_name, job_title=""):
         """Ask user for missing field value. Checks saved answers first, only asks for new ones."""
@@ -285,8 +298,8 @@ class LinkedinBot:
 
     def generate_search_urls(self):
         urls = []
-        kws = self.config.get("keywords") or self.resume_data.get("search_keywords",["software engineer"])
-        locs = self.config.get("location",["India"])
+        kws = self.config.get("keywords") or self.resume_data.get("search_keywords", [])
+        locs = self.config.get("location", [])
         for loc in locs:
             for kw in kws:
                 u = f"{constants.LINKEDIN_JOBS_SEARCH}?f_AL=true&keywords={kw}"
@@ -317,6 +330,7 @@ class LinkedinBot:
         dry = self.config.get("dry_run", False)
         for ui, url in enumerate(urls):
             if not self.running: break
+            self.wait_if_paused()
             self.driver.get(url); time.sleep(random.uniform(2, constants.BOT_SPEED))
             try:
                 tjt = self.driver.find_element(By.XPATH,"//small").text
@@ -329,6 +343,7 @@ class LinkedinBot:
             except: tp = 1
             for pg in range(tp):
                 if not self.running or self.stats["applied"]>=mx: break
+                self.wait_if_paused()
                 if pg > 0:
                     self.driver.get(url+f"&start={constants.JOBS_PER_PAGE*pg}"); time.sleep(random.uniform(2, constants.BOT_SPEED))
 
@@ -348,6 +363,7 @@ class LinkedinBot:
 
                 for oi, offer in enumerate(offers):
                     if not self.running or self.stats["applied"]>=mx: break
+                    self.wait_if_paused()
                     try:
                         # Click the job card to load details in side panel
                         try:
@@ -965,7 +981,7 @@ class LinkedinBot:
             except: pass
         except: pass
 
-    def stop(self): self.running = False; self.emit("info","⏹️ Stopping...")
+    def stop(self): self.running = False; self._pause_event.clear(); self.emit("info","⏹️ Stopping...")
     def cleanup(self):
         if self.driver:
             try: self.driver.quit()

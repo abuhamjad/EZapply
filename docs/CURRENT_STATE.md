@@ -23,13 +23,11 @@ This document should be updated whenever a major development version is complete
 
 # Snapshot
 
-EZApply has completed its frontend foundation and backend foundation.
+EZApply has successfully completed the UI foundation, desktop foundation, frontend foundation, backend foundation, data & persistence, frontend-backend integration, and the automation engine integration.
 
-The application runs as a native desktop application using Tauri with a fully modular frontend architecture built with React and TypeScript. The frontend includes reusable layouts, shared components, centralized services, custom hooks, and shared type definitions. The backend is now built with FastAPI, including configuration management, environment loading, centralized logging, SQLAlchemy infrastructure, dependency injection, and a centralized API router with a health endpoint.
+The application runs as a native desktop application using Tauri. The React + TypeScript frontend is fully integrated with a FastAPI Python backend through a unified service layer and custom hooks. A SQLite local database manages persistent data, including user profiles, resumes, search keywords, application history, and automation configuration. The automation engine is connected via a legacy bot runner manager that supports manual browser redirection for sign-ins, live stats tracking, and a server-sent events stream for real-time log projection to the UI.
 
-Both frontend and backend architectures are production-ready and properly documented. Project architecture, documentation, workflows, coding standards, and development conventions are complete.
-
-The next phase is the implementation of persistent data storage and database integration.
+All systems are functional and the application has been verified running end-to-end.
 
 ---
 
@@ -42,10 +40,10 @@ The next phase is the implementation of persistent data storage and database int
 | v0.3.0 | ✅ Project Blueprint Complete |
 | v0.4.0 | ✅ Frontend Foundation Complete |
 | v0.5.0 | ✅ Backend Foundation Complete |
-| v0.6.0 | 🔄 Data & Persistence (Next) |
-| v0.7.0 | ⏳ Frontend–Backend Integration |
-| v0.8.0 | ⏳ Automation Engine |
-| v0.9.0 | ⏳ Intelligence Layer |
+| v0.6.0 | ✅ Data & Persistence Complete |
+| v0.7.0 | ✅ Frontend–Backend Integration Complete |
+| v0.8.0 | ✅ Automation Engine Complete |
+| v0.9.0 | 🔄 Intelligence Layer (Next) |
 | v1.0.0 | ⏳ Desktop MVP |
 
 ---
@@ -58,11 +56,11 @@ The next phase is the implementation of persistent data storage and database int
 - Tailwind CSS styling.
 - shadcn/ui integration.
 - Responsive desktop layout.
-- Dashboard page.
-- Bot Control page.
-- Saved Information page.
-- Analytics page.
-- Navigation between pages.
+- Dashboard page with live status updates, statistics overview, and recent applications list.
+- Bot Control page with active status card, start/pause/stop actions, and search configuration forms.
+- Saved Information page with tabs for Profile, Resume, Templates, and Search Keywords.
+- Analytics page with weekly application bar charts, platform breakdown, and summary cards.
+- Full sidebar navigation between pages.
 
 ---
 
@@ -75,106 +73,52 @@ The next phase is the implementation of persistent data storage and database int
 
 ---
 
-## Frontend Foundation
+## Frontend Foundation & Integration
 
-- Shared application layouts.
-- Shared reusable UI components.
+- Shared layout system and reusable UI components.
 - Centralized TypeScript type system.
-- Frontend service layer.
-- Custom React hooks.
-- Modular frontend architecture.
-- Shared component library.
-- Centralized mock data access.
-- Frontend architecture audit completed.
-- Production build verified.
+- Frontend service layer connecting to local FastAPI endpoints instead of mock data.
+- Custom React hooks managing states for Analytics, Automation, Dashboard, and Saved Information.
+- Live Server-Sent Events (SSE) subscriber interface to stream events from the automation runner.
+- Build system production verification.
 
 ---
 
-## Project Architecture
+## Backend & Data Persistence
 
-- Layered architecture defined.
-- Module ownership defined.
-- Feature specifications documented.
-- Workflow specifications documented.
-- Coding standards established.
-- Development guidelines established.
-- Documentation architecture completed.
-
----
-
-## Development Infrastructure
-
-- Git versioning strategy.
-- Release branch workflow.
-- Semantic version tags.
-- Standardized project documentation.
-- Architecture audit workflow.
-
----
-
-## Backend Foundation
-
-- FastAPI project scaffold.
-- Centralized configuration management.
-- Environment variable loading.
+- FastAPI project scaffold with centralized router, dependencies, and environment variable loading.
+- SQLite integration with SQLAlchemy models (Profile, Resume, Template, Keyword, Run, Event, Application, Setting).
+- Migration-ready DB layer with automatic schema verification.
 - Reusable logging system.
-- SQLAlchemy engine, base, and session.
-- Dependency injection framework.
-- Centralized API router.
-- Health check endpoint.
-- Backend architecture audit.
+- EZApplyRepository pattern for database operations.
+- API routers for Health, Analytics, Dashboard, Saved Info, and Automation.
+
+---
+
+## Automation Engine
+
+- Legacy Selenium bot runner integration (`BotManager`).
+- Manual sign-in browser redirection with polling detection.
+- Live status/stats updates and events queue mapping.
+- Safe start/pause/resume/stop runner control.
+- Event broker for streaming log history to clients in real-time.
 
 ---
 
 # In Progress
 
-## v0.6 — Data & Persistence
+## v0.9 — Intelligence Layer
 
 Current objectives:
 
-- SQLite integration.
-- SQLAlchemy models.
-- Repository layer.
-- Database migrations.
-- Persistent data management.
+- Resume parsing.
+- Question learning system.
+- Smart answer reuse.
+- AI-assisted application matching.
 
 ---
 
 # Not Started
-
-## Backend
-
-- FastAPI implementation.
-- API endpoints.
-- Business logic.
-- Request validation.
-- Authentication.
-- Error handling.
-
----
-
-## Data & Persistence
-
-- SQLite integration.
-- SQLAlchemy models.
-- Repository layer.
-- Database migrations.
-- Persistent settings.
-- Local storage.
-
----
-
-## Automation
-
-- Playwright integration.
-- Browser automation.
-- Session management.
-- Platform adapters.
-- Job application engine.
-- Resume parsing.
-- Question learning system.
-
----
 
 ## Intelligence
 
@@ -182,6 +126,15 @@ Current objectives:
 - Smart answer learning.
 - AI-assisted automation.
 - Recommendation engine.
+
+---
+
+## Desktop MVP
+
+- Installer generation.
+- Tauri update mechanism.
+- Production environment optimizations.
+- Native build distributions.
 
 ---
 
@@ -198,12 +151,9 @@ Current objectives:
 
 ## Current Limitations
 
-- Frontend currently uses mock data.
-- Database models have not yet been defined.
-- No persistent storage integration.
-- No browser automation.
-- No AI functionality.
-- No automated testing pipeline.
+- No autonomous resume parsing yet (relies on pre-filled templates/profile database fields).
+- No smart answer AI models (intelligence layer).
+- SSE connection does not automatically reconnect if the backend service drops and restarts.
 
 ---
 
@@ -217,29 +167,22 @@ Current objectives:
 
 # Technical Debt
 
-Current technical debt is intentionally low.
-
-The frontend architecture audit has been completed and no significant architectural refactoring is recommended before backend implementation.
-
-Remaining technical debt is implementation-related rather than architectural.
+- Browser automation engine (`bot_manager.py`) is legacy code; it could benefit from transition to modern Playwright structures.
+- Uvicorn/Vite running as sidecar processes on the desktop should be cleanly bound within Tauri lifecycle event listeners.
 
 ---
 
 # Next Milestone
 
-## v0.6 — Data & Persistence
+## v0.9 — Intelligence Layer
 
 ### Primary Goal
 
-Implement persistent local storage and database integration for the backend.
+Implement automated resume parsing, intelligence models for job form answering, and smart answer reuse.
 
 ### Success Criteria
 
-- SQLite integration completed.
-- SQLAlchemy models defined.
-- Repository layer established.
-- Database migrations configured.
-- Settings persistence implemented.
-- Resume storage implemented.
-- Application history storage implemented.
-- Ready for frontend-backend integration.
+- Resume parser extracts text and structures fields.
+- Form question matching matches browser input fields to resume fields using AI/heuristics.
+- Smart answers are stored in the database for reuse.
+- System handles unknown questions via user prompts in the UI.

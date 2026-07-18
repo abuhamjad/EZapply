@@ -1,11 +1,4 @@
-import {
-  Bot,
-  Briefcase,
-  Eye,
-  Mail,
-  Send,
-  ThumbsUp,
-} from "lucide-react";
+import { Bot, Briefcase, Eye, Mail, Send, ThumbsUp } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 import type { BotStatus } from "../core/types";
 import { StatCard } from "../components/shared/StatCard";
@@ -14,7 +7,13 @@ import { Card } from "../components/shared/components/cards";
 import { useDashboard } from "../core/hooks";
 
 export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
-  const { funnelData, recentActivity } = useDashboard();
+  const { funnelData, recentActivity, stats, error } = useDashboard();
+  const responseRate = stats.totalApplied
+    ? `${((stats.responses / stats.totalApplied) * 100).toFixed(1)}% response rate`
+    : "No response data yet";
+  const interviewRate = stats.totalApplied
+    ? `${((stats.interviews / stats.totalApplied) * 100).toFixed(1)}% conversion`
+    : "No interview data yet";
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,43 +53,37 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
               {botStatus === "running"
-                ? "Scanning LinkedIn · Indeed · Glassdoor · Dice"
+                ? "Browser automation is active"
                 : botStatus === "paused"
-                  ? "Bot is paused — resume to continue applying"
-                  : "Bot is stopped — go to Bot Control to start"}
+                  ? "Bot is paused"
+                  : "Bot is stopped"}
             </p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-xs text-muted-foreground">Applied today</p>
-          <p
-            className="text-2xl font-light"
-            style={{ fontFamily: "var(--font-mono)" }}
-          >
-            {botStatus === "running" ? "14" : "—"}
+          <p className="text-2xl font-light" style={{ fontFamily: "var(--font-mono)" }}>
+            {stats.appliedToday}
           </p>
         </div>
       </div>
 
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Applied"
-          value="116"
-          sub="+14 today"
+          value={String(stats.totalApplied)}
+          sub={`${stats.appliedToday} today`}
           icon={Send}
           accent
         />
-        <StatCard label="Viewed" value="43" sub="37% view rate" icon={Eye} />
-        <StatCard
-          label="Responses"
-          value="17"
-          sub="14.7% response rate"
-          icon={Mail}
-        />
+        <StatCard label="Viewed" value={String(stats.viewed)} sub="Tracked views" icon={Eye} />
+        <StatCard label="Responses" value={String(stats.responses)} sub={responseRate} icon={Mail} />
         <StatCard
           label="Interviews"
-          value="5"
-          sub="4.3% conversion"
+          value={String(stats.interviews)}
+          sub={interviewRate}
           icon={ThumbsUp}
         />
       </div>
@@ -98,47 +91,37 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <Card className="lg:col-span-3 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-foreground">
-              Recent Applications
-            </h3>
-            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              View all
-            </button>
+            <h3 className="text-sm font-semibold text-foreground">Recent Applications</h3>
           </div>
-          <div className="flex flex-col divide-y divide-border">
-            {recentActivity.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between py-3 group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                    <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+          {recentActivity.length ? (
+            <div className="flex flex-col divide-y divide-border">
+              {recentActivity.map((item) => (
+                <div key={item.id} className="flex items-center justify-between py-3 group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                      <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{item.role}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {[item.company, item.platform].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {item.role}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.company} · {item.platform}
-                    </p>
+                  <div className="flex items-center gap-3 shrink-0 ml-2">
+                    <StatusBadge status={item.status} />
+                    <span className="text-[11px] text-muted-foreground hidden sm:block">{item.time}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 ml-2">
-                  <StatusBadge status={item.status} />
-                  <span className="text-[11px] text-muted-foreground hidden sm:block">
-                    {item.time}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground py-8 text-center">No applications recorded yet.</p>
+          )}
         </Card>
 
         <Card className="lg:col-span-2 p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">
-            Application Funnel
-          </h3>
+          <h3 className="text-sm font-semibold text-foreground mb-4">Application Funnel</h3>
           <div className="flex justify-center mb-3">
             <PieChart width={160} height={160}>
               <Pie
@@ -150,29 +133,20 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
                 dataKey="value"
                 strokeWidth={0}
               >
-                {funnelData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
+                {funnelData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Pie>
             </PieChart>
           </div>
           <div className="flex flex-col gap-2 mt-1">
             {funnelData.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center justify-between text-xs"
-              >
+              <div key={item.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: item.color }} />
                   <span className="text-muted-foreground">{item.name}</span>
                 </div>
-                <span
-                  className="font-medium"
-                  style={{ fontFamily: "var(--font-mono)" }}
-                >
+                <span className="font-medium" style={{ fontFamily: "var(--font-mono)" }}>
                   {item.value}
                 </span>
               </div>

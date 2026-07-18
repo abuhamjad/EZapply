@@ -41,6 +41,12 @@ export default defineConfig({
     watch: {
       ignored: ['**/desktop/src-tauri/**'],
     },
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     target: 'es2021',

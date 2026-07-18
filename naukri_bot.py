@@ -1,4 +1,4 @@
-import hashlib, os, pickle, random, time, queue
+import hashlib, os, pickle, random, time, queue, threading
 from typing import Dict, List
 import constants
 
@@ -9,10 +9,23 @@ class NaukriBot:
         self.resume_data = resume_data or {}
         self.driver = None
         self.running = False
+        self._pause_event = threading.Event()
         self.stats = {"jobs_found":0,"applied":0,"skipped":0,"failed":0,"already_applied":0}
 
     def emit(self, etype, msg, data=None):
         self.event_queue.put({"type":etype,"message":msg,"data":data or {},"timestamp":time.strftime("%H:%M:%S")})
+
+    def pause(self):
+        self._pause_event.set()
+        self.emit("info", "Automation paused at a safe point")
+
+    def resume(self):
+        self._pause_event.clear()
+        self.emit("info", "Automation resumed")
+
+    def wait_if_paused(self):
+        while self.running and self._pause_event.is_set():
+            time.sleep(0.25)
 
     def setup_driver(self):
         from browser_driver import create_driver
@@ -204,12 +217,13 @@ class NaukriBot:
     def apply_to_jobs(self):
         from selenium.webdriver.common.by import By
         self.running = True
-        kws = self.config.get("keywords") or self.resume_data.get("search_keywords",["software engineer"])
-        loc = self.config.get("location",["India"])[0] if self.config.get("location") else "India"
+        kws = self.config.get("keywords") or self.resume_data.get("search_keywords", [])
+        loc = self.config.get("location", [""])[0] if self.config.get("location") else ""
         mx = self.config.get("max_applications",50)
         dry = self.config.get("dry_run", False)
         for kw in kws:
             if not self.running or self.stats["applied"]>=mx: break
+            self.wait_if_paused()
             search_url = f"https://www.naukri.com/{kw.replace(' ','-')}-jobs-in-{loc.lower().replace(' ','-')}"
             self.emit("info",f"🔍 Naukri: searching '{kw}' in {loc}")
             self.driver.get(search_url); time.sleep(random.uniform(3,5))
@@ -234,6 +248,7 @@ class NaukriBot:
                     except: continue
             for link in links:
                 if not self.running or self.stats["applied"]>=mx: break
+                self.wait_if_paused()
                 try:
                     self.driver.get(link); time.sleep(random.uniform(2,4))
                     self.stats["jobs_found"] += 1
@@ -366,7 +381,7 @@ class NaukriBot:
         self.running = False
         self.emit("complete",f"✅ Naukri done! Applied: {self.stats['applied']}",self.stats.copy())
 
-    def stop(self): self.running = False; self.emit("info","⏹️ Naukri stopping...")
+    def stop(self): self.running = False; self._pause_event.clear(); self.emit("info","⏹️ Naukri stopping...")
     def cleanup(self):
         if self.driver:
             try: self.driver.quit()

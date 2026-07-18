@@ -21,6 +21,7 @@ class BotManager:
         self.pending_question = None  # Track current unanswered question
         self.signin_driver = None  # Browser for manual sign-in
         self.signin_platform = None
+        self.paused = False
 
     def start(self, config: Dict, resume_data: Dict = None):
         if self.status == "running":
@@ -31,6 +32,7 @@ class BotManager:
         self.combined_stats = {"jobs_found":0,"applied":0,"skipped":0,"blacklisted":0,"already_applied":0,"failed":0}
         self.log_history = []
         self.pending_question = None
+        self.paused = False
         # Clear queues
         for q in (self.event_queue, self.response_queue):
             while not q.empty():
@@ -62,6 +64,7 @@ class BotManager:
         self.combined_stats = {"jobs_found":0,"applied":0,"skipped":0,"blacklisted":0,"already_applied":0,"failed":0}
         self.log_history = []
         self.pending_question = None
+        self.paused = False
         # Clear queues
         for q in (self.event_queue, self.response_queue):
             while not q.empty():
@@ -238,7 +241,11 @@ class BotManager:
             self._check_all_done()
 
     def _check_all_done(self):
-        alive = any(t.is_alive() for t in self.threads)
+        current_thread = threading.current_thread()
+        alive = any(
+            thread is not current_thread and thread.is_alive()
+            for thread in self.threads
+        )
         if not alive:
             self.status = "idle"
             self.emit_event("complete", "🏁 All bots finished!", self.combined_stats)
@@ -257,6 +264,7 @@ class BotManager:
 
     def stop(self):
         self.status = "stopping"
+        self.paused = False
         if self.linkedin_bot: self.linkedin_bot.stop()
         if self.naukri_bot: self.naukri_bot.stop()
         # Unblock any waiting question
@@ -268,6 +276,30 @@ class BotManager:
             self.signin_driver = None
         self.emit_event("info", "⏹️ Stop signal sent to all bots")
         return {"status": "stopping"}
+
+    def pause(self):
+        if self.status != "running":
+            return {"error": "Bot is not running"}
+        self.paused = True
+        if self.linkedin_bot:
+            self.linkedin_bot.pause()
+        if self.naukri_bot:
+            self.naukri_bot.pause()
+        self.status = "paused"
+        self.emit_event("info", "Bot paused")
+        return {"status": "paused"}
+
+    def resume(self):
+        if self.status != "paused":
+            return {"error": "Bot is not paused"}
+        self.paused = False
+        if self.linkedin_bot:
+            self.linkedin_bot.resume()
+        if self.naukri_bot:
+            self.naukri_bot.resume()
+        self.status = "running"
+        self.emit_event("info", "Bot resumed")
+        return {"status": "running"}
 
     def get_status(self):
         return {"status": self.status, "stats": self.combined_stats, "pending_question": self.pending_question}

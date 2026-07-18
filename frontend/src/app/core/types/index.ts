@@ -14,8 +14,14 @@ export type {
   StatusLabelMap,
   AutomationData,
   StatusInfo,
+  AutomationConfig,
+  AutomationStatus,
+  AutomationEvent,
 } from "./automation";
+export type { DashboardStats } from "./dashboard";
 export type {
   CoverLetterTemplate,
   SavedInfoData,
+  ProfileField,
+  Resume,
 } from "./saved-information";

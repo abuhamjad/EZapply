@@ -17,3 +17,11 @@ export interface DashboardData {
   funnelData: FunnelItem[];
   recentActivity: RecentActivityItem[];
 }
+
+export interface DashboardStats {
+  totalApplied: number;
+  viewed: number;
+  responses: number;
+  interviews: number;
+  appliedToday: number;
+}

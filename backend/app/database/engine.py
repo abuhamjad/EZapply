@@ -7,3 +7,12 @@ engine = create_engine(
     if settings.database_url.startswith("sqlite")
     else {},
 )
+
+
+def initialize_database() -> None:
+    """Create the local SQLite schema on first application start."""
+    # Import entities before metadata creation so every table is registered.
+    import app.models  # noqa: F401
+    from app.database.base import Base
+
+    Base.metadata.create_all(bind=engine)

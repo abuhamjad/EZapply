@@ -189,70 +189,85 @@ The backend foundation is complete and fully integrated with the documented arch
 
 ---
 
-# Upcoming Versions
-
----
-
 ## v0.6.0 — Data & Persistence
 
-**Status:** 🔄 Next Release
+**Release Status:** ✅ Released
 
-### Planned Scope
+### Objectives
 
-- SQLite integration
-- SQLAlchemy models
-- Repository layer
-- Database migrations
-- Settings persistence
-- Resume storage
-- Application history
-- Local data management
+Implement local persistent data storage using a SQLite database and SQLAlchemy.
 
----
+### Included
+
+- SQLite integration with automatic DB file creation.
+- SQLAlchemy declarative base and ORM models (Profile, Resume, Template, Keyword, Run, Event, Application, Setting).
+- Schema validation.
+- EZApplyRepository pattern for secure and isolated database queries.
+- Settings persistence and resume file path records.
+
+### Notes
+
+Replaced static frontend/backend configurations with persistent SQL rows.
 
 ---
 
 ## v0.7.0 — Frontend–Backend Integration
 
-**Status:** ⏳ Planned
+**Release Status:** ✅ Released
 
-### Planned Scope
+### Objectives
 
-- Replace mock data with live API communication
-- API client integration
-- Request validation
-- Error handling
-- Loading states
-- End-to-end frontend/backend communication
+Integrate the frontend service layer with the FastAPI backend, removing mock data.
+
+### Included
+
+- Unified React Custom Hooks (`useDashboard`, `useAutomation`, `useSavedInfo`, `useAnalytics`) communicating with live services.
+- API Client module wrapper using fetch with correct error response mapping.
+- FastAPI backend routers mapping dashboard statistics, settings updates, keywords, profile information, and resume documents.
+- Error validation and runtime response mapping (converting SQLAlchemy exceptions to HTTP 4xx/5xx).
+
+### Notes
+
+The application UI is now completely driven by FastAPI endpoints.
 
 ---
 
 ## v0.8.0 — Automation Engine
 
-**Status:** ⏳ Planned
+**Release Status:** ✅ Released
 
-### Planned Scope
+### Objectives
 
-- Playwright integration
-- Browser automation
-- Platform adapters
-- Session management
-- Job application engine
-- Progress tracking
+Integrate local selenium browser automation runners with real-time logging and events streamed to the user interface.
+
+### Included
+
+- Bot Control page hooks to start, pause, stop, and configure the runner.
+- Daemon thread orchestration in the backend via `BotManager` and `LegacyBotService`.
+- Server-Sent Events (SSE) events route enabling real-time streaming of automation console logs to the React UI terminal log viewer.
+- Verification and manual/automatic redirection detection for platform (LinkedIn, Naukri) sign-ins.
+- Driver factory module ensuring selenium launches appropriately on target Windows devices.
+
+### Notes
+
+EZApply is now fully integrated with the browser driver automation framework.
+
+---
+
+# Upcoming Versions
 
 ---
 
 ## v0.9.0 — Intelligence Layer
 
-**Status:** ⏳ Planned
+**Status:** 🔄 Next Release
 
 ### Planned Scope
 
-- Resume parsing
-- Question learning
-- Smart answer reuse
-- AI recommendations
-- Analytics insights
+- Resume text parsing and indexing.
+- Machine learning/heuristic matching of form questions to profile data.
+- AI suggestions and smart answer caching.
+- Manual correction fallback form in the UI.
 
 ---
 
@@ -262,14 +277,11 @@ The backend foundation is complete and fully integrated with the documented arch
 
 ### Planned Scope
 
-- Complete desktop application
-- Production-ready release
-- Installer
-- Update mechanism
-- Performance optimization
-- Stability improvements
-- Documentation review
-- User testing
+- Complete desktop application distribution.
+- Native installation packages (WIX/NSIS).
+- Background auto-updater.
+- Clean system tray integration.
+- Production security review.
 
 ---
 
