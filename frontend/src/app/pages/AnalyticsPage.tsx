@@ -14,16 +14,46 @@ import { ChartLegend } from "../components/shared/components/charts";
 import { useAnalytics } from "../core/hooks";
 
 export function AnalyticsPage() {
-  const { applicationData, platformData } = useAnalytics();
+  const { data, error } = useAnalytics();
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        Failed to load analytics — is the backend running? ({error})
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+        Loading analytics…
+      </div>
+    );
+  }
+
+  const { applicationData, platformData } = data;
+
+  const weekSent = applicationData.reduce((sum, d) => sum + d.sent, 0);
+  const weekResponses = applicationData.reduce((sum, d) => sum + d.responses, 0);
+  const activeDays = applicationData.filter((d) => d.sent > 0).length;
+  const avgPerDay = activeDays ? (weekSent / activeDays).toFixed(1) : "0";
+  const responseRate = weekSent
+    ? `${((weekResponses / weekSent) * 100).toFixed(1)}%`
+    : "0%";
 
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "This Week", value: "87", sub: "applications sent" },
-          { label: "Avg / Day", value: "12.4", sub: "on active days" },
-          { label: "Response Rate", value: "14.7%", sub: "+2.1% vs last week" },
-          { label: "Interview Rate", value: "4.3%", sub: "industry avg: 3.1%" },
+          { label: "This Week", value: String(weekSent), sub: "applications sent" },
+          { label: "Avg / Day", value: avgPerDay, sub: "on active days" },
+          { label: "Response Rate", value: responseRate, sub: "this week" },
+          {
+            label: "Responses",
+            value: String(weekResponses),
+            sub: "this week",
+          },
         ].map(({ label, value, sub }) => (
           <Card key={label}>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

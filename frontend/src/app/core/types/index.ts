@@ -2,6 +2,7 @@ export type { View, BotStatus, ViewConfig } from "./common";
 export type {
   FunnelItem,
   RecentActivityItem,
+  DashboardStats,
   DashboardData,
 } from "./dashboard";
 export type {
@@ -14,8 +15,12 @@ export type {
   StatusLabelMap,
   AutomationData,
   StatusInfo,
+  JobType,
+  BotConfig,
+  BotState,
 } from "./automation";
 export type {
+  KeywordItem,
   CoverLetterTemplate,
   SavedInfoData,
 } from "./saved-information";

@@ -1,3 +1,9 @@
+export interface KeywordItem {
+  id: number;
+  text: string;
+  kind: "include" | "exclude";
+}
+
 export interface CoverLetterTemplate {
   id: number;
   name: string;
@@ -5,7 +11,7 @@ export interface CoverLetterTemplate {
 }
 
 export interface SavedInfoData {
-  savedKeywords: string[];
-  excludedKeywords: string[];
+  savedKeywords: KeywordItem[];
+  excludedKeywords: KeywordItem[];
   coverLetterTemplates: CoverLetterTemplate[];
 }

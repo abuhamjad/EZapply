@@ -4,11 +4,13 @@ import { AnalyticsPage } from "./pages/AnalyticsPage";
 import { BotControlPage } from "./pages/BotControlPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SavedInfoPage } from "./pages/SavedInfoPage";
-import type { BotStatus, View } from "./core/types";
+import { useBotState } from "./core/hooks";
+import type { View } from "./core/types";
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
-  const [botStatus, setBotStatus] = useState<BotStatus>("running");
+  const { botState, setStatus, updateConfig } = useBotState();
+  const botStatus = botState?.status ?? "stopped";
 
   return (
     <AppLayout
@@ -18,7 +20,12 @@ export default function App() {
     >
       {activeView === "dashboard" && <DashboardPage botStatus={botStatus} />}
       {activeView === "bot-control" && (
-        <BotControlPage botStatus={botStatus} setBotStatus={setBotStatus} />
+        <BotControlPage
+          botStatus={botStatus}
+          setBotStatus={setStatus}
+          botState={botState}
+          updateConfig={updateConfig}
+        />
       )}
       {activeView === "saved-info" && <SavedInfoPage />}
       {activeView === "analytics" && <AnalyticsPage />}

@@ -8,7 +8,23 @@ export function SavedInfoPage() {
   const [activeTab, setActiveTab] = useState<
     "profile" | "resume" | "templates"
   >("profile");
-  const { savedKeywords, excludedKeywords, coverLetterTemplates } = useSavedInfo();
+  const { data, error, addKeyword, deleteKeyword, addTemplate, deleteTemplate } =
+    useSavedInfo();
+  const [newInclude, setNewInclude] = useState("");
+  const [newExclude, setNewExclude] = useState("");
+
+  const submitKeyword = async (kind: "include" | "exclude") => {
+    const text = (kind === "include" ? newInclude : newExclude).trim();
+    if (!text) return;
+    await addKeyword(text, kind);
+    if (kind === "include") setNewInclude("");
+    else setNewExclude("");
+  };
+
+  const createTemplate = async () => {
+    const name = window.prompt("Template name");
+    if (name?.trim()) await addTemplate(name.trim());
+  };
 
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
@@ -27,6 +43,12 @@ export function SavedInfoPage() {
           </button>
         ))}
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+          Failed to load saved info — is the backend running? ({error})
+        </div>
+      )}
 
       {activeTab === "profile" && (
         <Card>
@@ -114,12 +136,15 @@ export function SavedInfoPage() {
             <h3 className="text-sm font-semibold text-foreground">
               Cover Letter Templates
             </h3>
-            <button className="flex items-center gap-1.5 text-xs font-medium text-foreground bg-secondary px-3 py-1.5 rounded-lg hover:bg-secondary/80 transition-colors">
+            <button
+              onClick={() => void createTemplate()}
+              className="flex items-center gap-1.5 text-xs font-medium text-foreground bg-secondary px-3 py-1.5 rounded-lg hover:bg-secondary/80 transition-colors"
+            >
               <Plus className="w-3.5 h-3.5" /> New Template
             </button>
           </div>
           <div className="flex flex-col gap-2">
-            {coverLetterTemplates.map((t) => (
+            {(data?.coverLetterTemplates ?? []).map((t) => (
               <div
                 key={t.id}
                 className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/40 transition-colors group"
@@ -141,7 +166,10 @@ export function SavedInfoPage() {
                   <button className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
-                  <button className="p-1.5 rounded-md hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors">
+                  <button
+                    onClick={() => void deleteTemplate(t.id)}
+                    className="p-1.5 rounded-md hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                  >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -154,17 +182,43 @@ export function SavedInfoPage() {
               Keywords to include
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {savedKeywords.map((kw) => (
-                <KeywordBadge key={kw} keyword={kw} variant="include" />
+              {(data?.savedKeywords ?? []).map((kw) => (
+                <button
+                  key={kw.id}
+                  onClick={() => void deleteKeyword(kw.id)}
+                  title="Click to remove"
+                >
+                  <KeywordBadge keyword={kw.text} variant="include" />
+                </button>
               ))}
+              <input
+                value={newInclude}
+                onChange={(e) => setNewInclude(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && void submitKeyword("include")}
+                placeholder="+ Add"
+                className="px-2.5 py-1 text-xs bg-input-background rounded-md border border-border outline-none w-20 focus:w-32 transition-all"
+              />
             </div>
             <p className="text-xs text-muted-foreground mb-2">
               Keywords to exclude
             </p>
             <div className="flex flex-wrap gap-2">
-              {excludedKeywords.map((kw) => (
-                <KeywordBadge key={kw} keyword={kw} variant="exclude" />
+              {(data?.excludedKeywords ?? []).map((kw) => (
+                <button
+                  key={kw.id}
+                  onClick={() => void deleteKeyword(kw.id)}
+                  title="Click to remove"
+                >
+                  <KeywordBadge keyword={kw.text} variant="exclude" />
+                </button>
               ))}
+              <input
+                value={newExclude}
+                onChange={(e) => setNewExclude(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && void submitKeyword("exclude")}
+                placeholder="+ Add"
+                className="px-2.5 py-1 text-xs bg-input-background rounded-md border border-border outline-none w-20 focus:w-32 transition-all"
+              />
             </div>
           </div>
         </Card>

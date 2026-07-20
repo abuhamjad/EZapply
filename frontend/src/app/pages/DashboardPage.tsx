@@ -13,8 +13,31 @@ import { StatusBadge } from "../components/shared/StatusBadge";
 import { Card } from "../components/shared/components/cards";
 import { useDashboard } from "../core/hooks";
 
+function pct(part: number, whole: number): string {
+  if (!whole) return "0%";
+  return `${((part / whole) * 100).toFixed(1)}%`;
+}
+
 export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
-  const { funnelData, recentActivity } = useDashboard();
+  const { data, error } = useDashboard();
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        Failed to load dashboard — is the backend running? ({error})
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="rounded-xl border p-6 text-sm text-muted-foreground">
+        Loading dashboard…
+      </div>
+    );
+  }
+
+  const { stats, funnelData, recentActivity } = data;
 
   return (
     <div className="flex flex-col gap-6">
@@ -67,7 +90,7 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
             className="text-2xl font-light"
             style={{ fontFamily: "var(--font-mono)" }}
           >
-            {botStatus === "running" ? "14" : "—"}
+            {botStatus === "running" ? stats.appliedToday : "—"}
           </p>
         </div>
       </div>
@@ -75,22 +98,27 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Applied"
-          value="116"
-          sub="+14 today"
+          value={String(stats.totalApplied)}
+          sub={`+${stats.appliedToday} today`}
           icon={Send}
           accent
         />
-        <StatCard label="Viewed" value="43" sub="37% view rate" icon={Eye} />
+        <StatCard
+          label="Viewed"
+          value={String(stats.viewed)}
+          sub={`${pct(stats.viewed, stats.totalApplied)} view rate`}
+          icon={Eye}
+        />
         <StatCard
           label="Responses"
-          value="17"
-          sub="14.7% response rate"
+          value={String(stats.responses)}
+          sub={`${pct(stats.responses, stats.totalApplied)} response rate`}
           icon={Mail}
         />
         <StatCard
           label="Interviews"
-          value="5"
-          sub="4.3% conversion"
+          value={String(stats.interviews)}
+          sub={`${pct(stats.interviews, stats.totalApplied)} conversion`}
           icon={ThumbsUp}
         />
       </div>

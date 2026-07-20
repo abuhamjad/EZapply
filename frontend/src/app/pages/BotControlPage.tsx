@@ -1,17 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DollarSign, MapPin, Pause, Play, Square } from "lucide-react";
-import type { BotStatus } from "../core/types";
+import type { BotConfig, BotState, BotStatus } from "../core/types";
 import { Card } from "../components/shared/components/cards";
 import { useAutomation } from "../core/hooks";
 
 type BotControlPageProps = {
   botStatus: BotStatus;
   setBotStatus: (status: BotStatus) => void;
+  botState: BotState | null;
+  updateConfig: (config: BotConfig) => Promise<void>;
 };
 
 export function BotControlPage({
   botStatus,
   setBotStatus,
+  botState,
+  updateConfig,
 }: BotControlPageProps) {
   const { statusColors, statusLabels } = useAutomation();
   const [platforms, setPlatforms] = useState({
@@ -24,6 +28,36 @@ export function BotControlPage({
   const [location, setLocation] = useState("Remote");
   const [salary, setSalary] = useState("80000");
   const [delay, setDelay] = useState("45");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!botState) return;
+    setPlatforms({
+      linkedin: botState.linkedin,
+      indeed: botState.indeed,
+      glassdoor: botState.glassdoor,
+      dice: botState.dice,
+    });
+    setJobType(botState.job_type);
+    setLocation(botState.location);
+    setSalary(String(botState.min_salary));
+    setDelay(String(botState.apply_delay));
+  }, [botState]);
+
+  const saveConfig = async (
+    next: Partial<BotConfig> = {},
+  ) => {
+    await updateConfig({
+      ...platforms,
+      job_type: jobType as BotConfig["job_type"],
+      location,
+      min_salary: parseInt(salary, 10) || 0,
+      apply_delay: parseInt(delay, 10) || 45,
+      ...next,
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
@@ -80,7 +114,11 @@ export function BotControlPage({
           ).map(([key, val]) => (
             <button
               key={key}
-              onClick={() => setPlatforms((p) => ({ ...p, [key]: !p[key] }))}
+              onClick={() => {
+                const next = { ...platforms, [key]: !platforms[key] };
+                setPlatforms(next);
+                void saveConfig(next);
+              }}
               className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-all ${
                 val
                   ? "border-foreground bg-foreground text-background"
@@ -97,9 +135,22 @@ export function BotControlPage({
       </Card>
 
       <Card>
-        <h3 className="text-sm font-semibold text-foreground mb-4">
-          Search Filters
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-foreground">
+            Search Filters
+          </h3>
+          <div className="flex items-center gap-2">
+            {saved && (
+              <span className="text-xs text-emerald-600">Saved</span>
+            )}
+            <button
+              onClick={() => void saveConfig()}
+              className="px-3 py-1.5 text-xs font-medium bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
+            >
+              Save Filters
+            </button>
+          </div>
+        </div>
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
@@ -109,7 +160,10 @@ export function BotControlPage({
               {["full-time", "contract", "part-time"].map((t) => (
                 <button
                   key={t}
-                  onClick={() => setJobType(t)}
+                  onClick={() => {
+                    setJobType(t);
+                    void saveConfig({ job_type: t as BotConfig["job_type"] });
+                  }}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     jobType === t
                       ? "bg-foreground text-background"
@@ -131,6 +185,7 @@ export function BotControlPage({
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  onBlur={() => void saveConfig()}
                   className="w-full pl-8 pr-3 py-2 text-sm bg-input-background rounded-lg border-0 outline-none focus:ring-1 ring-ring"
                 />
               </div>
@@ -144,6 +199,7 @@ export function BotControlPage({
                 <input
                   value={salary}
                   onChange={(e) => setSalary(e.target.value)}
+                  onBlur={() => void saveConfig()}
                   className="w-full pl-8 pr-3 py-2 text-sm bg-input-background rounded-lg border-0 outline-none focus:ring-1 ring-ring"
                   style={{ fontFamily: "var(--font-mono)" }}
                 />
@@ -161,6 +217,8 @@ export function BotControlPage({
                 max="120"
                 value={delay}
                 onChange={(e) => setDelay(e.target.value)}
+                onMouseUp={() => void saveConfig()}
+                onTouchEnd={() => void saveConfig()}
                 className="flex-1 accent-emerald-500"
               />
               <span

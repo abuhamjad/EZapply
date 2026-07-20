@@ -13,7 +13,16 @@ export interface RecentActivityItem {
   status: string;
 }
 
+export interface DashboardStats {
+  totalApplied: number;
+  appliedToday: number;
+  viewed: number;
+  responses: number;
+  interviews: number;
+}
+
 export interface DashboardData {
+  stats: DashboardStats;
   funnelData: FunnelItem[];
   recentActivity: RecentActivityItem[];
 }

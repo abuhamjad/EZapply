@@ -18,3 +18,20 @@ export interface AutomationData {
 }
 
 export type StatusInfo = Record<BotStatus, string>;
+
+export type JobType = "full-time" | "contract" | "part-time";
+
+export interface BotConfig {
+  linkedin: boolean;
+  indeed: boolean;
+  glassdoor: boolean;
+  dice: boolean;
+  job_type: JobType;
+  location: string;
+  min_salary: number;
+  apply_delay: number;
+}
+
+export interface BotState extends BotConfig {
+  status: BotStatus;
+}
