@@ -1,4 +1,4 @@
-export type { View, BotStatus, ViewConfig } from "./common";
+export type { View, BotStatus, BotRunStatus, ViewConfig } from "./common";
 export type {
   FunnelItem,
   RecentActivityItem,
@@ -18,9 +18,13 @@ export type {
   JobType,
   BotConfig,
   BotState,
+  BotStartResponse,
+  BotRunStatusResponse,
 } from "./automation";
+export { isTerminalRunStatus, mapRunStatusToBotStatus } from "./automation";
 export type {
   KeywordItem,
   CoverLetterTemplate,
+  ProfileInfo,
   SavedInfoData,
 } from "./saved-information";

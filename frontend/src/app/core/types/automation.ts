@@ -1,4 +1,4 @@
-import type { BotStatus } from "./common";
+import type { BotRunStatus, BotStatus } from "./common";
 
 export interface StatusColorMap {
   running: string;
@@ -34,4 +34,40 @@ export interface BotConfig {
 
 export interface BotState extends BotConfig {
   status: BotStatus;
+}
+
+export interface BotStartResponse {
+  run_id: string;
+  status: BotRunStatus;
+}
+
+export interface BotRunStatusResponse {
+  id: string;
+  status: BotRunStatus;
+  applications_submitted: number;
+  error_message: string | null;
+  started_at: string;
+  finished_at: string | null;
+  pending_question: unknown | null;
+}
+
+export function mapRunStatusToBotStatus(status: BotRunStatus): BotStatus {
+  switch (status) {
+    case "STARTED":
+    case "RUNNING":
+      return "running";
+    case "PAUSED_NEEDS_INPUT":
+      return "paused";
+    case "FAILED":
+      return "failed";
+    case "COMPLETED":
+      return "completed";
+    case "STOPPED":
+    default:
+      return "stopped";
+  }
+}
+
+export function isTerminalRunStatus(status: BotRunStatus): boolean {
+  return status === "COMPLETED" || status === "FAILED" || status === "STOPPED";
 }

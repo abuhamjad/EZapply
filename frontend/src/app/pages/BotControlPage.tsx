@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
-import { DollarSign, MapPin, Pause, Play, Square } from "lucide-react";
+import { DollarSign, HelpCircle, MapPin, Pause, Play, Square } from "lucide-react";
 import type { BotConfig, BotState, BotStatus } from "../core/types";
 import { Card } from "../components/shared/components/cards";
 import { useAutomation } from "../core/hooks";
 
 type BotControlPageProps = {
   botStatus: BotStatus;
-  setBotStatus: (status: BotStatus) => void;
+  onStart: () => Promise<{ run_id: string; status: string } | null>;
+  onSetStatus: (status: BotStatus) => void;
   botState: BotState | null;
   updateConfig: (config: BotConfig) => Promise<void>;
 };
 
 export function BotControlPage({
   botStatus,
-  setBotStatus,
+  onStart,
+  onSetStatus,
   botState,
   updateConfig,
 }: BotControlPageProps) {
@@ -67,17 +69,18 @@ export function BotControlPage({
         </h3>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setBotStatus("running")}
+            onClick={() => void onStart()}
+            disabled={botStatus === "running"}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
               botStatus === "running"
-                ? "bg-emerald-500 text-white shadow-sm"
+                ? "bg-emerald-500 text-white shadow-sm cursor-default"
                 : "bg-secondary text-foreground hover:bg-emerald-50 hover:text-emerald-700"
             }`}
           >
-            <Play className="w-4 h-4" /> Start
+            <Play className="w-4 h-4" /> {botStatus === "running" ? "Running..." : "Start"}
           </button>
           <button
-            onClick={() => setBotStatus("paused")}
+            onClick={() => onSetStatus("paused")}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
               botStatus === "paused"
                 ? "bg-amber-400 text-white shadow-sm"
@@ -87,7 +90,7 @@ export function BotControlPage({
             <Pause className="w-4 h-4" /> Pause
           </button>
           <button
-            onClick={() => setBotStatus("stopped")}
+            onClick={() => onSetStatus("stopped")}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
               botStatus === "stopped"
                 ? "bg-foreground text-background shadow-sm"
@@ -100,7 +103,6 @@ export function BotControlPage({
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <span className={`w-2 h-2 rounded-full ${statusColors[botStatus]}`} />
           Currently {statusLabels[botStatus].toLowerCase()}
-          {botStatus === "running" && " · Next scan in 41s"}
         </div>
       </Card>
 
@@ -111,26 +113,41 @@ export function BotControlPage({
         <div className="grid grid-cols-2 gap-3">
           {(
             Object.entries(platforms) as [keyof typeof platforms, boolean][]
-          ).map(([key, val]) => (
-            <button
-              key={key}
-              onClick={() => {
-                const next = { ...platforms, [key]: !platforms[key] };
-                setPlatforms(next);
-                void saveConfig(next);
-              }}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-all ${
-                val
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-background text-muted-foreground hover:border-foreground/30"
-              }`}
-            >
-              <div
-                className={`w-2 h-2 rounded-full ${val ? "bg-emerald-400" : "bg-zinc-300"}`}
-              />
-              {key.charAt(0).toUpperCase() + key.slice(1)}
-            </button>
-          ))}
+          ).map(([key, val]) => {
+            const isComingSoon = key === "glassdoor" || key === "dice";
+            return (
+              <div key={key} className="relative group">
+                <button
+                  onClick={() => {
+                    if (isComingSoon) return;
+                    const next = { ...platforms, [key]: !platforms[key] };
+                    setPlatforms(next);
+                    void saveConfig(next);
+                  }}
+                  disabled={isComingSoon}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition-all w-full ${
+                    isComingSoon
+                      ? "border-dashed border-zinc-300 bg-zinc-50 text-zinc-400 cursor-not-allowed"
+                      : val
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-background text-muted-foreground hover:border-foreground/30"
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full ${isComingSoon ? "bg-zinc-300" : val ? "bg-emerald-400" : "bg-zinc-300"}`}
+                  />
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                  {isComingSoon && <HelpCircle className="w-3.5 h-3.5 ml-auto text-zinc-400" />}
+                </button>
+                {isComingSoon && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-zinc-800 text-white text-[11px] rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                    Coming soon — only LinkedIn and Indeed are supported
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-800" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </Card>
 

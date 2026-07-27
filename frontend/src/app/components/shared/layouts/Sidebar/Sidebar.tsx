@@ -4,8 +4,23 @@ import {
   Database,
   LayoutDashboard,
 } from "lucide-react";
-import { statusColors, statusLabels } from "../../../../data";
 import type { BotStatus, View } from "../../../../core/types";
+
+const STATUS_COLORS: Record<BotStatus, string> = {
+  running: "bg-emerald-500",
+  paused: "bg-amber-400",
+  stopped: "bg-zinc-400",
+  failed: "bg-rose-500",
+  completed: "bg-sky-500",
+};
+
+const STATUS_LABELS: Record<BotStatus, string> = {
+  running: "Running",
+  paused: "Paused",
+  stopped: "Stopped",
+  failed: "Failed",
+  completed: "Completed",
+};
 
 const navItems = [
   { id: "dashboard" as View, label: "Dashboard", icon: LayoutDashboard },
@@ -58,14 +73,22 @@ export function Sidebar({
       <div className="px-4 py-4 border-t border-border">
         <div className="flex items-center gap-2.5">
           <div
-            className={`w-2 h-2 rounded-full shrink-0 ${statusColors[botStatus]}`}
+            className={`w-2 h-2 rounded-full shrink-0 ${STATUS_COLORS[botStatus]}`}
           />
           <div className="min-w-0">
             <p className="text-xs font-medium text-foreground truncate">
-              Bot {statusLabels[botStatus]}
+              Bot {STATUS_LABELS[botStatus]}
             </p>
             <p className="text-[11px] text-muted-foreground truncate">
-              {botStatus === "running" ? "116 total sent" : "Inactive"}
+              {botStatus === "running"
+                ? "116 total sent"
+                : botStatus === "paused"
+                  ? "Paused"
+                  : botStatus === "failed"
+                    ? "Last run failed"
+                    : botStatus === "completed"
+                      ? "Last run complete"
+                      : "Inactive"}
             </p>
           </div>
         </div>

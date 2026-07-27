@@ -1,18 +1,13 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies.database import get_db
-from app.schemas.api import AnalyticsOut, DashboardOut
-from app.services import stats
+from app.database.connection import get_db
+from app.schemas.application import StatsSummaryResponse
+from app.services.stats import StatsService
 
-router = APIRouter(tags=["stats"])
-
-
-@router.get("/dashboard", response_model=DashboardOut)
-def dashboard(db: Session = Depends(get_db)):
-    return stats.get_dashboard(db)
+router = APIRouter(prefix="/stats", tags=["Stats"])
 
 
-@router.get("/analytics", response_model=AnalyticsOut)
-def analytics(db: Session = Depends(get_db)):
-    return stats.get_analytics(db)
+@router.get("/summary", response_model=StatsSummaryResponse)
+async def get_stats_summary(db: AsyncSession = Depends(get_db)):
+    return await StatsService(db).get_summary()

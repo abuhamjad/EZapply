@@ -9,8 +9,8 @@ import type { View } from "./core/types";
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
-  const { botState, setStatus, updateConfig } = useBotState();
-  const botStatus = botState?.status ?? "stopped";
+  const { botState, botStatus, startBot, setStatus, updateConfig } =
+    useBotState();
 
   return (
     <AppLayout
@@ -22,7 +22,8 @@ export default function App() {
       {activeView === "bot-control" && (
         <BotControlPage
           botStatus={botStatus}
-          setBotStatus={setStatus}
+          onStart={startBot}
+          onSetStatus={setStatus}
           botState={botState}
           updateConfig={updateConfig}
         />

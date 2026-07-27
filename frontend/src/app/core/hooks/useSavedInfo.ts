@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { SavedInfoData } from "../types";
 import { SavedInfoService } from "../services";
+import type { ProfileData } from "../services/SavedInfoService";
 
 export function useSavedInfo() {
   const [data, setData] = useState<SavedInfoData | null>(null);
@@ -18,6 +19,14 @@ export function useSavedInfo() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  const updateProfile = useCallback(
+    async (profile: Partial<ProfileData>) => {
+      await SavedInfoService.updateProfile(profile);
+      refresh();
+    },
+    [refresh],
+  );
 
   const addKeyword = useCallback(
     async (text: string, kind: "include" | "exclude") => {
@@ -51,5 +60,5 @@ export function useSavedInfo() {
     [refresh],
   );
 
-  return { data, error, addKeyword, deleteKeyword, addTemplate, deleteTemplate };
+  return { data, error, updateProfile, addKeyword, deleteKeyword, addTemplate, deleteTemplate };
 }

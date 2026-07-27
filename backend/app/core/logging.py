@@ -1,22 +1,14 @@
 import logging
-from typing import Optional
-from .config import settings
-from .constants import LOG_FORMAT
+import sys
 
 
-def configure_logging() -> None:
-    root_logger = logging.getLogger()
-    root_logger.setLevel(settings.log_level)
-
-    handler = logging.StreamHandler()
-    handler.setLevel(settings.log_level)
-
-    formatter = logging.Formatter(LOG_FORMAT)
-    handler.setFormatter(formatter)
-
-    if not root_logger.handlers:
-        root_logger.addHandler(handler)
+def setup_logging(level: int = logging.INFO) -> None:
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)

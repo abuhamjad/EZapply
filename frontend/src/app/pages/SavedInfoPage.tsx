@@ -1,17 +1,91 @@
-import { useState } from "react";
-import { CheckCircle2, Edit3, FileText, Plus, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { CheckCircle2, Edit3, FileText, Plus, Save, Trash2, Upload } from "lucide-react";
 import { Card } from "../components/shared/components/cards";
 import { KeywordBadge, Tag } from "../components/shared/components/badges";
 import { useSavedInfo } from "../core/hooks";
+import { SavedInfoService } from "../core/services";
 
 export function SavedInfoPage() {
   const [activeTab, setActiveTab] = useState<
     "profile" | "resume" | "templates"
   >("profile");
-  const { data, error, addKeyword, deleteKeyword, addTemplate, deleteTemplate } =
+  const { data, error, updateProfile, addKeyword, deleteKeyword, addTemplate, deleteTemplate } =
     useSavedInfo();
   const [newInclude, setNewInclude] = useState("");
   const [newExclude, setNewExclude] = useState("");
+
+  // Editable profile fields
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    location: "",
+    linkedin_url: "",
+    portfolio_url: "",
+    target_titles: "",
+    target_locations: "",
+    salary_expectation: "",
+    work_authorization: "",
+    remote_preference: "",
+  });
+
+  const startEditing = () => {
+    if (!data?.profile) return;
+    setForm({
+      full_name: data.profile.full_name,
+      email: data.profile.email,
+      phone: data.profile.phone,
+      location: data.profile.location,
+      linkedin_url: data.profile.linkedin_url,
+      portfolio_url: data.profile.portfolio_url,
+      target_titles: data.profile.target_titles.join(", "),
+      target_locations: data.profile.target_locations.join(", "),
+      salary_expectation: data.profile.salary_expectation,
+      work_authorization: data.profile.work_authorization,
+      remote_preference: data.profile.remote_preference,
+    });
+    setEditing(true);
+  };
+
+  const saveProfile = async () => {
+    await updateProfile({
+      full_name: form.full_name,
+      email: form.email,
+      phone: form.phone,
+      location: form.location,
+      linkedin_url: form.linkedin_url,
+      portfolio_url: form.portfolio_url,
+      target_titles: form.target_titles.split(",").map((s) => s.trim()).filter(Boolean),
+      target_locations: form.target_locations.split(",").map((s) => s.trim()).filter(Boolean),
+      salary_expectation: form.salary_expectation,
+      work_authorization: form.work_authorization,
+      remote_preference: form.remote_preference,
+    });
+    setEditing(false);
+  };
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      await SavedInfoService.uploadResume(file);
+      // Refresh saved info to show updated resume info if backend returns it
+      // For now, just reload the page data
+      window.location.reload();
+    } catch (err) {
+      setUploadError((err as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const submitKeyword = async (kind: "include" | "exclude") => {
     const text = (kind === "include" ? newInclude : newExclude).trim();
@@ -25,6 +99,9 @@ export function SavedInfoPage() {
     const name = window.prompt("Template name");
     if (name?.trim()) await addTemplate(name.trim());
   };
+
+  const profile = data?.profile;
+  const skills = profile?.skills ?? [];
 
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
@@ -56,46 +133,85 @@ export function SavedInfoPage() {
             <h3 className="text-sm font-semibold text-foreground">
               Personal Information
             </h3>
-            <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              <Edit3 className="w-3.5 h-3.5" /> Edit
-            </button>
+            {!editing ? (
+              <button
+                onClick={startEditing}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Edit3 className="w-3.5 h-3.5" /> Edit
+              </button>
+            ) : (
+              <button
+                onClick={() => void saveProfile()}
+                className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+              >
+                <Save className="w-3.5 h-3.5" /> Save
+              </button>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Full Name", value: "Alex Chen" },
-              { label: "Email", value: "alex.chen@email.com" },
-              { label: "Phone", value: "+1 (415) 555-0192" },
-              { label: "Location", value: "San Francisco, CA" },
-              { label: "LinkedIn URL", value: "linkedin.com/in/alexchen" },
-              { label: "GitHub", value: "github.com/alexchen" },
-              { label: "Years of Experience", value: "5 years" },
-              { label: "Current Title", value: "Senior Python Developer" },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-                <p className="text-sm font-medium text-foreground">{value}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 pt-5 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-2">Skills</p>
-            <div className="flex flex-wrap gap-2">
+
+          {editing ? (
+            <div className="grid grid-cols-2 gap-4">
               {[
-                "Python",
-                "FastAPI",
-                "Django",
-                "PostgreSQL",
-                "Redis",
-                "Docker",
-                "AWS",
-                "Machine Learning",
-                "REST APIs",
-                "GraphQL",
-              ].map((skill) => (
-                <Tag key={skill} label={skill} />
+                { label: "Full Name", key: "full_name" as const, type: "text" },
+                { label: "Email", key: "email" as const, type: "email" },
+                { label: "Phone", key: "phone" as const, type: "text" },
+                { label: "Location", key: "location" as const, type: "text" },
+                { label: "LinkedIn URL", key: "linkedin_url" as const, type: "text" },
+                { label: "Portfolio URL", key: "portfolio_url" as const, type: "text" },
+                { label: "Target Titles (comma-sep)", key: "target_titles" as const, type: "text" },
+                { label: "Target Locations (comma-sep)", key: "target_locations" as const, type: "text" },
+                { label: "Salary Expectation", key: "salary_expectation" as const, type: "text" },
+                { label: "Work Authorization", key: "work_authorization" as const, type: "text" },
+                { label: "Remote Preference", key: "remote_preference" as const, type: "text" },
+              ].map(({ label, key, type }) => (
+                <div key={key}>
+                  <label className="text-xs text-muted-foreground mb-0.5 block">{label}</label>
+                  <input
+                    type={type}
+                    value={form[key]}
+                    onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-input-background rounded-lg border-0 outline-none focus:ring-1 ring-ring"
+                  />
+                </div>
               ))}
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "Full Name", value: profile?.full_name || "—" },
+                  { label: "Email", value: profile?.email || "—" },
+                  { label: "Phone", value: profile?.phone || "—" },
+                  { label: "Location", value: profile?.location || "—" },
+                  { label: "LinkedIn URL", value: profile?.linkedin_url || "—" },
+                  { label: "Portfolio URL", value: profile?.portfolio_url || "—" },
+                  { label: "Target Titles", value: profile?.target_titles?.join(", ") || "—" },
+                  { label: "Target Locations", value: profile?.target_locations?.join(", ") || "—" },
+                  { label: "Salary Expectation", value: profile?.salary_expectation || "—" },
+                  { label: "Work Authorization", value: profile?.work_authorization || "—" },
+                  { label: "Remote Preference", value: profile?.remote_preference || "—" },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 pt-5 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-2">Skills (from custom answers)</p>
+                <div className="flex flex-wrap gap-2">
+                  {skills.length > 0 ? (
+                    skills.map((skill, i) => (
+                      <Tag key={i} label={skill} />
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No skills saved yet</span>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </Card>
       )}
 
@@ -106,26 +222,28 @@ export function SavedInfoPage() {
             <FileText className="w-10 h-10 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                Alex_Chen_Resume_2026.pdf
+                No resume uploaded yet
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Uploaded Jul 1, 2026 · 124 KB
+                Upload a PDF or DOCX to get started
               </p>
             </div>
             <div className="flex gap-2 mt-2">
-              <button className="px-3 py-1.5 text-xs font-medium bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors">
-                Replace
-              </button>
-              <button className="px-3 py-1.5 text-xs font-medium bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors">
-                Preview
-              </button>
+              <label className="px-3 py-1.5 text-xs font-medium bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors cursor-pointer">
+                {uploading ? "Uploading..." : "Upload Resume"}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.docx,.doc,.txt"
+                  className="hidden"
+                  onChange={handleResumeUpload}
+                  disabled={uploading}
+                />
+              </label>
             </div>
-          </div>
-          <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <p className="text-xs text-emerald-700">
-              Resume ATS score: 87/100 — good keyword match for Python roles
-            </p>
+            {uploadError && (
+              <p className="text-xs text-red-600 mt-2">{uploadError}</p>
+            )}
           </div>
         </Card>
       )}
@@ -144,37 +262,43 @@ export function SavedInfoPage() {
             </button>
           </div>
           <div className="flex flex-col gap-2">
-            {(data?.coverLetterTemplates ?? []).map((t) => (
-              <div
-                key={t.id}
-                className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/40 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-muted-foreground" />
+            {(data?.coverLetterTemplates ?? []).length > 0 ? (
+              (data?.coverLetterTemplates ?? []).map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/40 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {t.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Last edited {t.lastEdited}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Last edited {t.lastEdited}
-                    </p>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => void deleteTemplate(t.id)}
+                      className="p-1.5 rounded-md hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => void deleteTemplate(t.id)}
-                    className="p-1.5 rounded-md hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground py-4 text-center">
+                No templates yet — click "New Template" to create one
+              </p>
+            )}
           </div>
 
           <div className="mt-4 pt-4 border-t border-border">

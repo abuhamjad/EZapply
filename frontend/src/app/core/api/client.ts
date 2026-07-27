@@ -9,8 +9,24 @@ export async function apiGet<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export async function apiPost<T>(
+  path: string,
+  body?: unknown,
+): Promise<T | null> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: body !== undefined ? { "Content-Type": "application/json" } : {},
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    throw new Error(`POST ${path} failed: ${res.status}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
 export async function apiSend<T>(
-  method: "POST" | "PUT" | "DELETE",
+  method: "PUT" | "DELETE",
   path: string,
   body?: unknown,
 ): Promise<T | null> {

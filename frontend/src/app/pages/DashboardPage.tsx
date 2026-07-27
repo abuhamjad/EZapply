@@ -24,7 +24,7 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
   if (error) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-        Failed to load dashboard — is the backend running? ({error})
+        Failed to load dashboard - is the backend running? ({error})
       </div>
     );
   }
@@ -32,33 +32,52 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
   if (!data) {
     return (
       <div className="rounded-xl border p-6 text-sm text-muted-foreground">
-        Loading dashboard…
+        Loading dashboard...
       </div>
     );
   }
 
   const { stats, funnelData, recentActivity } = data;
 
+  const heroClasses =
+    botStatus === "running"
+      ? "bg-emerald-50 border-emerald-200"
+      : botStatus === "paused"
+        ? "bg-amber-50 border-amber-200"
+        : botStatus === "failed"
+          ? "bg-rose-50 border-rose-200"
+          : botStatus === "completed"
+            ? "bg-sky-50 border-sky-200"
+            : "bg-secondary border-border";
+
+  const iconClasses =
+    botStatus === "running"
+      ? "bg-emerald-500"
+      : botStatus === "paused"
+        ? "bg-amber-400"
+        : botStatus === "failed"
+          ? "bg-rose-500"
+          : botStatus === "completed"
+            ? "bg-sky-500"
+            : "bg-zinc-400";
+
+  const heroText =
+    botStatus === "running"
+      ? "Scanning LinkedIn · Indeed · Glassdoor · Dice"
+      : botStatus === "paused"
+        ? "Bot is paused - resume to continue applying"
+        : botStatus === "failed"
+          ? "Bot run failed - check the latest error message"
+          : botStatus === "completed"
+            ? "Bot run completed successfully"
+            : "Bot is stopped - go to Bot Control to start";
+
   return (
     <div className="flex flex-col gap-6">
-      <div
-        className={`rounded-xl border p-6 flex items-center justify-between transition-colors ${
-          botStatus === "running"
-            ? "bg-emerald-50 border-emerald-200"
-            : botStatus === "paused"
-              ? "bg-amber-50 border-amber-200"
-              : "bg-secondary border-border"
-        }`}
-      >
+      <div className={`rounded-xl border p-6 flex items-center justify-between transition-colors ${heroClasses}`}>
         <div className="flex items-center gap-4">
           <div
-            className={`w-11 h-11 rounded-full flex items-center justify-center ${
-              botStatus === "running"
-                ? "bg-emerald-500"
-                : botStatus === "paused"
-                  ? "bg-amber-400"
-                  : "bg-zinc-400"
-            }`}
+            className={`w-11 h-11 rounded-full flex items-center justify-center ${iconClasses}`}
           >
             <Bot className="w-5 h-5 text-white" />
           </div>
@@ -76,20 +95,13 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {botStatus === "running"
-                ? "Scanning LinkedIn · Indeed · Glassdoor · Dice"
-                : botStatus === "paused"
-                  ? "Bot is paused — resume to continue applying"
-                  : "Bot is stopped — go to Bot Control to start"}
+              {heroText}
             </p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-xs text-muted-foreground">Applied today</p>
-          <p
-            className="text-2xl font-light"
-            style={{ fontFamily: "var(--font-mono)" }}
-          >
+          <p className="text-2xl font-light" style={{ fontFamily: "var(--font-mono)" }}>
             {botStatus === "running" ? stats.appliedToday : "—"}
           </p>
         </div>

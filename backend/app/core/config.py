@@ -1,25 +1,33 @@
-from typing import Literal
-from pydantic_settings import BaseSettings
-from pydantic import Field
+"""
+Centralized application settings.
+Loaded once as a singleton `settings` object, imported everywhere else.
+"""
+from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # backend/
 
 
 class Settings(BaseSettings):
-    app_name: str = Field(default="EZApply", description="Application name")
-    api_version: str = Field(default="0.5.4", description="API version")
-    environment: Literal["development", "production"] = Field(
-        default="development", description="Application environment"
-    )
-    debug: bool = Field(default=False, description="Enable debug mode")
-    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
-        default="INFO", description="Logging level"
-    )
-    database_url: str = Field(
-        default="sqlite:///./app.db", description="Database connection URL"
-    )
+    APP_NAME: str = "EZApply Backend"
+    API_V1_PREFIX: str = "/api/v1"
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    # SQLite DB lives inside backend/app.db
+    DATABASE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR / 'app.db'}"
+
+    # Where uploaded resumes are stored on disk
+    RESUME_STORAGE_DIR: Path = BASE_DIR / "storage" / "resumes"
+    MAX_RESUME_SIZE_MB: int = 10
+    ALLOWED_RESUME_EXTENSIONS: tuple[str, ...] = (".pdf", ".docx", ".doc", ".txt")
+
+    # CORS - React dev server / Electron/Tauri origin
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "tauri://localhost"]
+
+    # Bot defaults
+    DEFAULT_APPLICATION_LIMIT: int = 25
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()
+settings.RESUME_STORAGE_DIR.mkdir(parents=True, exist_ok=True)

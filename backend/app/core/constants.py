@@ -1,13 +1,21 @@
-APP_NAME = "EZApply"
-API_VERSION = "0.5.4"
+from enum import Enum
 
-DEFAULT_TIMEOUT_SECONDS = 30
-DEFAULT_MAX_RETRIES = 3
 
-SUPPORTED_RESUME_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt"}
-SUPPORTED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif"}
+class BotRunStatus(str, Enum):
+    STARTED = "STARTED"
+    RUNNING = "RUNNING"
+    PAUSED_NEEDS_INPUT = "PAUSED_NEEDS_INPUT"
+    COMPLETED = "COMPLETED"
+    STOPPED = "STOPPED"
+    FAILED = "FAILED"
 
-MAX_FILE_SIZE_MB = 10
-MAX_RESUME_UPLOAD_SIZE_MB = 5
 
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+class ApplicationStatus(str, Enum):
+    APPLIED = "APPLIED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+
+
+class Platform(str, Enum):
+    LINKEDIN = "linkedin"
+    INDEED = "indeed"
