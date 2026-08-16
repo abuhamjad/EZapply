@@ -1,0 +1,17 @@
+$kind: http-request
+description: Add Price Type
+url: "{{baseUrl}}/api/v1/price-type"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "is_active": true,
+      "type": "Weekday"
+    }
+settings: {}
+examples: ./.resources/Add Price Type.resources/examples
+order: 2000

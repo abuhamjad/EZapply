@@ -1,0 +1,18 @@
+$kind: http-request
+description: Reschedule Party
+url: "{{baseUrl}}/partybooking/reschedule-party"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "new_date": "2026-07-20",
+      "new_time": 600,
+      "party_id": 1,
+      "reason": ""
+    }
+settings: {}
+examples: ./.resources/Reschedule Party.resources/examples
+order: 1000

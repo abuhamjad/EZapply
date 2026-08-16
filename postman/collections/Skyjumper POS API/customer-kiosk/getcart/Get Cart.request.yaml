@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get Cart
+url: "{{baseUrl}}/customer-kiosk/getcart"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "cart_guid": "guid-123",
+      "customer_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Cart.resources/examples
+order: 1000

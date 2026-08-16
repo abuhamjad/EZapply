@@ -1,0 +1,17 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/download/get-customer-card-transaction?start_date=&end_date=&card_no=&limit=&page="
+  method: GET
+  queryParams:
+    start_date: ""
+    end_date: ""
+    card_no: ""
+    limit: ""
+    page: ""
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

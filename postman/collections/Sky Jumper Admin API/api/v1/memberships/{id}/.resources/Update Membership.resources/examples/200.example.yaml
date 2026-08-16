@@ -1,0 +1,40 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/memberships/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: multipart/form-data
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    id: "1"
+  body:
+    type: formdata
+    content:
+      - type: text
+        key: duration
+        value: "12"
+      - type: text
+        key: is_active
+        value: "true"
+      - type: file
+        key: logo
+        src: []
+      - type: text
+        key: name
+        value: Gold Membership Updated
+      - type: text
+        key: price
+        value: "5000"
+      - type: text
+        key: tax_rate_id
+        value: "1"
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

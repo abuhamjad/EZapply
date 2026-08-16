@@ -1,0 +1,11 @@
+$kind: http-request
+description: Send OTP
+url: "{{baseUrl}}/Waiver/sendOtp/:mobile"
+method: GET
+pathVariables:
+  mobile: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Send OTP.resources/examples
+order: 1000

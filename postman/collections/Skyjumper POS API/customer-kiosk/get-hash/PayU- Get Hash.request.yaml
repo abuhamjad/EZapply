@@ -1,0 +1,20 @@
+$kind: http-request
+name: "PayU: Get Hash"
+description: "PayU: Get Hash"
+url: "{{baseUrl}}/customer-kiosk/get-hash"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 100,
+      "email": "employee@example.com",
+      "firstname": "John",
+      "productinfo": "Product Info",
+      "txnid": "TXN123"
+    }
+settings: {}
+examples: ./.resources/PayU- Get Hash.resources/examples
+order: 1000

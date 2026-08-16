@@ -1,0 +1,19 @@
+$kind: http-request
+description: Update Tax Rate
+url: "{{baseUrl}}/api/v1/tax-rate/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "is_active": true,
+      "rate": 18,
+      "type": "GST"
+    }
+settings: {}
+examples: ./.resources/Update Tax Rate.resources/examples
+order: 1000

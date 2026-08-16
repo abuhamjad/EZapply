@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get Location Products
+url: "{{baseUrl}}/api/v1/get-location-products"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "location_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Location Products.resources/examples
+order: 1000

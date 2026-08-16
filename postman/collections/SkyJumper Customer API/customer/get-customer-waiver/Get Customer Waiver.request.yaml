@@ -1,0 +1,7 @@
+$kind: http-request
+description: Auth required. Fetches waiver data for the logged-in customer's mobile number.
+url: "{{baseUrl}}/customer/get-customer-waiver"
+method: GET
+settings: {}
+examples: ./.resources/Get Customer Waiver.resources/examples
+order: 1000

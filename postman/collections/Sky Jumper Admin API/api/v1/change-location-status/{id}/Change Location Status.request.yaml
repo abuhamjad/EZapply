@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Location Status
+url: "{{baseUrl}}/api/v1/change-location-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Location Status.resources/examples
+order: 1000

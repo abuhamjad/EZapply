@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Party Summary Report
+url: "{{baseUrl}}/api/v1/reports/get-party-summary"
+method: GET
+settings: {}
+examples: ./.resources/Get Party Summary Report.resources/examples
+order: 1000

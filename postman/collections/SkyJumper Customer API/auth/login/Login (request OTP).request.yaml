@@ -1,0 +1,17 @@
+$kind: http-request
+description: Triggers an OTP SMS to the given mobile number (in MODE=development the SMS send is skipped).
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "mobile": "9999999999"
+    }
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Login (request OTP).resources/examples
+order: 1000

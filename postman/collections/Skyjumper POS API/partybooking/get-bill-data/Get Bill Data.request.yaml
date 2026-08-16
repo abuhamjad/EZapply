@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Bill Data
+url: "{{baseUrl}}/partybooking/get-bill-data"
+method: GET
+settings: {}
+examples: ./.resources/Get Bill Data.resources/examples
+order: 1000

@@ -1,0 +1,21 @@
+$kind: http-request
+description: Update Machine
+url: "{{baseUrl}}/api/v1/machine/update/:machine_id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  machine_id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "animation": "red",
+      "location_id": 1,
+      "machine_name": "Trampoline Machine 1 Updated",
+      "product_id": 1,
+      "type": "trampoline"
+    }
+settings: {}
+examples: ./.resources/Update Machine.resources/examples
+order: 1000

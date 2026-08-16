@@ -1,0 +1,9 @@
+$kind: http-request
+description: Renders a signed waiver as HTML for the given id (no auth).
+url: "{{baseUrl}}/get-waiver-detail/1"
+method: GET
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Waiver Detail (HTML).resources/examples
+order: 1000

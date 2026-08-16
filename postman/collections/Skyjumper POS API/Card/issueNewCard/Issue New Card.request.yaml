@@ -1,0 +1,17 @@
+$kind: http-request
+description: Issue New Card
+url: "{{baseUrl}}/Card/issueNewCard"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_hash_id": "abc123",
+      "card_no": "1000000001",
+      "id": 1
+    }
+settings: {}
+examples: ./.resources/Issue New Card.resources/examples
+order: 1000

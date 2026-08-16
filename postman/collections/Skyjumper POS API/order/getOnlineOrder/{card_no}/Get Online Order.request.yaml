@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Online Order
+url: "{{baseUrl}}/order/getOnlineOrder/:card_no"
+method: GET
+pathVariables:
+  card_no: ""
+settings: {}
+examples: ./.resources/Get Online Order.resources/examples
+order: 1000

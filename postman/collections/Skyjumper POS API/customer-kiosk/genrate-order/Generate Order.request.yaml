@@ -1,0 +1,18 @@
+$kind: http-request
+description: Generate Order
+url: "{{baseUrl}}/customer-kiosk/genrate-order"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 100,
+      "order_type": "",
+      "order_type_id": 1,
+      "quantity": 1
+    }
+settings: {}
+examples: ./.resources/Generate Order.resources/examples
+order: 1000

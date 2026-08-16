@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Manager Card Status
+url: "{{baseUrl}}/api/v1/change-status-manager-card/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Manager Card Status.resources/examples
+order: 1000

@@ -1,0 +1,18 @@
+$kind: http-request
+description: Add Employee Permission
+url: "{{baseUrl}}/api/v1/permission/add-employee-permission"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "employee_id": 1,
+      "is_active": 1,
+      "route_id": 1,
+      "type": "route"
+    }
+settings: {}
+examples: ./.resources/Add Employee Permission.resources/examples
+order: 1000

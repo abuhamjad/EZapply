@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Play Point Status
+url: "{{baseUrl}}/api/v1/play-point-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Play Point Status.resources/examples
+order: 1000

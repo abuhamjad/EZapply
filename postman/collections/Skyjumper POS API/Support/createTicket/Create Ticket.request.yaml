@@ -1,0 +1,21 @@
+$kind: http-request
+description: Create Ticket
+url: "{{baseUrl}}/Support/createTicket"
+method: POST
+headers:
+  Content-Type: multipart/form-data
+body:
+  type: formdata
+  content:
+    - type: text
+      key: catageryId
+      value: "1"
+    - type: file
+      key: file
+      src: []
+    - type: text
+      key: message
+      value: Issue description
+settings: {}
+examples: ./.resources/Create Ticket.resources/examples
+order: 1000

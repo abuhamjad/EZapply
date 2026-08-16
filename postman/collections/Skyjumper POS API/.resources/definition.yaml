@@ -1,0 +1,20 @@
+$kind: collection
+description: |-
+  Postman collection for the Skyjumper POS API (Express/Node).
+
+  Base URL prefix: `/api/pos/v1`.
+
+  Auth:
+  - Most endpoints require `Authorization: Bearer {{token}}` (obtained via Auth > Login).
+  - Machine/Kiosk hardware endpoints use header `api-x-key: {{api_x_key}}` instead.
+  - A few endpoints (login, OTP verify, reset password, waiver OTP, report downloads) require no auth.
+
+  Set the `base_url`, `token`, and `api_x_key` collection variables before running.
+variables:
+  baseUrl: http://localhost:3004/api/pos/v1
+auth:
+  - id: b405611c-32ad-4cee-9b1d-1356675f8017
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{bearerToken}}"

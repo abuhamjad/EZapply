@@ -1,0 +1,10 @@
+$kind: http-request
+description: Get Waiver Id
+url: "{{baseUrl}}/partybooking/get-waiver-id/:card_no/:party_id"
+method: GET
+pathVariables:
+  card_no: ""
+  party_id: ""
+settings: {}
+examples: ./.resources/Get Waiver Id.resources/examples
+order: 1000

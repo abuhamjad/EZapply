@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Tax Rate Status
+url: "{{baseUrl}}/api/v1/tax-rate-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Tax Rate Status.resources/examples
+order: 1000

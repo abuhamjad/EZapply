@@ -1,0 +1,12 @@
+$kind: http-request
+description: Get Add-ons
+url: "{{baseUrl}}/party/get-addons-data?type=&location_id=1"
+method: GET
+queryParams:
+  type: ""
+  location_id: "1"
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Add-ons.resources/examples
+order: 1000

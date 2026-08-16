@@ -1,0 +1,23 @@
+$kind: http-request
+description: Book Package
+url: "{{baseUrl}}/dashboard/book-package"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_id": 1,
+      "data": [],
+      "discount": 0,
+      "discount_reason": "",
+      "mobile_no": "9876543210",
+      "payment_mode": 1,
+      "priceTypeId": 1,
+      "promo_code": "",
+      "total_amount": 100
+    }
+settings: {}
+examples: ./.resources/Book Package.resources/examples
+order: 1000

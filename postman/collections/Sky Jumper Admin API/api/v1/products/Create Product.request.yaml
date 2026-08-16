@@ -1,0 +1,26 @@
+$kind: http-request
+description: Create Product
+url: "{{baseUrl}}/api/v1/products"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 500,
+      "company_id": 1,
+      "description": "30 min session",
+      "display_order": 1,
+      "is_active": true,
+      "is_combo": false,
+      "is_recipe": false,
+      "name": "Trampoline Session",
+      "payment_type_id": 1,
+      "product_type_id": 1,
+      "time": 30,
+      "track_inventory": false
+    }
+settings: {}
+examples: ./.resources/Create Product.resources/examples
+order: 2000

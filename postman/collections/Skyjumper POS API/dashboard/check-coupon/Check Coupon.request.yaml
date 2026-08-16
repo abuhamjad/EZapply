@@ -1,0 +1,10 @@
+$kind: http-request
+description: Check Coupon
+url: "{{baseUrl}}/dashboard/check-coupon?promo_code=&location_id="
+method: GET
+queryParams:
+  promo_code: ""
+  location_id: ""
+settings: {}
+examples: ./.resources/Check Coupon.resources/examples
+order: 1000

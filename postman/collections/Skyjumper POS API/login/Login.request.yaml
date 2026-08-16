@@ -1,0 +1,18 @@
+$kind: http-request
+description: Authenticate and receive a JWT. Auto-saves token to collection variable `token`.
+url: "{{baseUrl}}/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "employee@example.com",
+      "password": "Password123"
+    }
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Login.resources/examples
+order: 1000

@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Button Colour Status
+url: "{{baseUrl}}/api/v1/change-button-collor-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Button Colour Status.resources/examples
+order: 1000

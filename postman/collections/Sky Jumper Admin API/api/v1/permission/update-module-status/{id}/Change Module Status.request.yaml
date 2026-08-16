@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Module Status
+url: "{{baseUrl}}/api/v1/permission/update-module-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Module Status.resources/examples
+order: 1000

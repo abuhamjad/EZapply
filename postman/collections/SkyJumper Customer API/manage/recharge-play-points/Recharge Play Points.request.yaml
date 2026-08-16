@@ -1,0 +1,15 @@
+$kind: http-request
+description: Auth required. `data` is an app-encrypted JSON payload; server verifies payment then recharges the customer's card via SMS confirmation.
+url: "{{baseUrl}}/manage/recharge-play-points"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "data": "<AES-encrypted JSON string: { payment_id: string, ...card recharge fields }>"
+    }
+settings: {}
+examples: ./.resources/Recharge Play Points.resources/examples
+order: 1000

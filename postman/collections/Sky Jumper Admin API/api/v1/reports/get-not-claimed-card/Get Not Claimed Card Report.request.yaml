@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Not Claimed Card Report
+url: "{{baseUrl}}/api/v1/reports/get-not-claimed-card"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-09",
+      "limit": 10,
+      "page": 1
+    }
+settings: {}
+examples: ./.resources/Get Not Claimed Card Report.resources/examples
+order: 1000

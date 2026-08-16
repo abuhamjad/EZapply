@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Promotion Banner
+url: "{{baseUrl}}/api/v1/get-promotion-banner"
+method: GET
+settings: {}
+examples: ./.resources/Get Promotion Banner.resources/examples
+order: 1000

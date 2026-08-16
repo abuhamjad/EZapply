@@ -1,0 +1,9 @@
+$kind: http-request
+description: Redeem Loyalty Points
+url: "{{baseUrl}}/Card/redeem-loyalty-points/:card_no"
+method: POST
+pathVariables:
+  card_no: ""
+settings: {}
+examples: ./.resources/Redeem Loyalty Points.resources/examples
+order: 1000

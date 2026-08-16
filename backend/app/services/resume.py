@@ -62,6 +62,10 @@ class ResumeService:
             ),
         )
 
+    async def get_default(self):
+        """Return the default resume record, or None if none is set."""
+        return await self.repo.get_default()
+
     async def list_resumes(self):
         return await self.repo.list_all()
 

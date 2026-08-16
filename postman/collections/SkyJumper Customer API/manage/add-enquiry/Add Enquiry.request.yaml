@@ -1,0 +1,16 @@
+$kind: http-request
+description: Auth required.
+url: "{{baseUrl}}/manage/add-enquiry"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "message": "I have a question about membership.",
+      "type": "general"
+    }
+settings: {}
+examples: ./.resources/Add Enquiry.resources/examples
+order: 1000

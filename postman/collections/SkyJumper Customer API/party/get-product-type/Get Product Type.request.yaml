@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Product Type
+url: "{{baseUrl}}/party/get-product-type"
+method: GET
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Product Type.resources/examples
+order: 1000

@@ -1,0 +1,32 @@
+$kind: http-request
+description: Update Location
+url: "{{baseUrl}}/api/v1/locations/:id"
+method: PUT
+headers:
+  Content-Type: multipart/form-data
+pathVariables:
+  id: "1"
+body:
+  type: formdata
+  content:
+    - type: text
+      key: address
+      value: 123 Mall Road
+    - type: file
+      key: brand_image
+      src: []
+    - type: text
+      key: is_active
+      value: "true"
+    - type: file
+      key: logo
+      src: []
+    - type: text
+      key: name
+      value: Sky Jumper Andheri Updated
+    - type: text
+      key: phone_no
+      value: "9876543210"
+settings: {}
+examples: ./.resources/Update Location.resources/examples
+order: 1000

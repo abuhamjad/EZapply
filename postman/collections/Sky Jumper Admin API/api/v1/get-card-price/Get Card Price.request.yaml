@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Card Price
+url: "{{baseUrl}}/api/v1/get-card-price"
+method: GET
+settings: {}
+examples: ./.resources/Get Card Price.resources/examples
+order: 1000

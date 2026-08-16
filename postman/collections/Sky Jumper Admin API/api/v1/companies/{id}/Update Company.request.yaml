@@ -1,0 +1,25 @@
+$kind: http-request
+description: Update Company
+url: "{{baseUrl}}/api/v1/companies/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "address": "123 Business Park",
+      "city_id": 1,
+      "contact_person_name": "Jane Smith",
+      "email": "contact@skyjumper.com",
+      "is_active": true,
+      "mobile": "9876543210",
+      "name": "Sky Jumper Pvt Ltd",
+      "pincode": 400001,
+      "state_id": 1
+    }
+settings: {}
+examples: ./.resources/Update Company.resources/examples
+order: 1000

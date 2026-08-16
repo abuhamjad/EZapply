@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Pending Combo Product
+url: "{{baseUrl}}/dashboard/get-pending-combo-product/:customer_id"
+method: GET
+pathVariables:
+  customer_id: ""
+settings: {}
+examples: ./.resources/Get Pending Combo Product.resources/examples
+order: 1000

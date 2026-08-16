@@ -1,0 +1,16 @@
+$kind: http-request
+description: Clear Cart
+url: "{{baseUrl}}/customer-kiosk/clearcart"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "cart_guid": "guid-123",
+      "customer_id": 1
+    }
+settings: {}
+examples: ./.resources/Clear Cart.resources/examples
+order: 1000

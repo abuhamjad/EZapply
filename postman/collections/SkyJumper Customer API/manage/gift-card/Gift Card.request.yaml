@@ -1,0 +1,24 @@
+$kind: http-request
+description: Auth required. Creates/looks up the recipient customer by mobile/email/name and places a gift-card order, returning a payment hash.
+url: "{{baseUrl}}/manage/gift-card"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 500,
+      "email": "recipient@example.com",
+      "first_name": "Jane",
+      "gift_type": "play_points",
+      "last_name": "Smith",
+      "mobile": "9888888888",
+      "productinfo": "Gift Card Purchase",
+      "qty": 1,
+      "type": "new_card",
+      "type_id": 1
+    }
+settings: {}
+examples: ./.resources/Gift Card.resources/examples
+order: 1000

@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get Customer Details
+url: "{{baseUrl}}/customer/getCustomerDetails"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customer_id": 1,
+      "mobile": "9876543210"
+    }
+settings: {}
+examples: ./.resources/Get Customer Details.resources/examples
+order: 1000

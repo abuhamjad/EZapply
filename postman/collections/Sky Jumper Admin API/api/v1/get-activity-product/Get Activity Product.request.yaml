@@ -1,0 +1,18 @@
+$kind: http-request
+description: Get Activity Product
+url: "{{baseUrl}}/api/v1/get-activity-product"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "limit": 10,
+      "location_id": 1,
+      "page": 1
+    }
+settings: {}
+examples: ./.resources/Get Activity Product.resources/examples
+order: 1000

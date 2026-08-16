@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Addons Data
+url: "{{baseUrl}}/partybooking/get-addons-data"
+method: GET
+settings: {}
+examples: ./.resources/Get Addons Data.resources/examples
+order: 1000

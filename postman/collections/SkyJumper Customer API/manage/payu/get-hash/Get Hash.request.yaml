@@ -1,0 +1,19 @@
+$kind: http-request
+description: Auth required (mounted under /manage). Generates a PayU SHA-512 hash for a transaction.
+url: "{{baseUrl}}/manage/payu/get-hash"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": "1000",
+      "email": "test@example.com",
+      "firstname": "Test User",
+      "productinfo": "Recharge Purchase",
+      "txnid": "txn_1751009542404"
+    }
+settings: {}
+examples: ./.resources/Get Hash.resources/examples
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Summary Report
+url: "{{baseUrl}}/reports/get-summary"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-14",
+      "location_id": 1,
+      "start_date": "2026-07-01"
+    }
+settings: {}
+examples: ./.resources/Get Summary Report.resources/examples
+order: 1000

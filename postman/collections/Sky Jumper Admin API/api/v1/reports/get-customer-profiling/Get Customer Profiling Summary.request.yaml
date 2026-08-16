@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Customer Profiling Summary
+url: "{{baseUrl}}/api/v1/reports/get-customer-profiling"
+method: GET
+settings: {}
+examples: ./.resources/Get Customer Profiling Summary.resources/examples
+order: 1000

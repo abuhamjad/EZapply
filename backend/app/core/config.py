@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # Bot defaults
     DEFAULT_APPLICATION_LIMIT: int = 25
+    PLAYWRIGHT_HEADLESS: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

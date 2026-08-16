@@ -1,0 +1,19 @@
+$kind: http-request
+description: Refund Amount
+url: "{{baseUrl}}/Refund/refundAmount"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 100,
+      "card_no": "1000000001",
+      "payment_mode_id": 1,
+      "refund_reason_id": 1,
+      "remarks": ""
+    }
+settings: {}
+examples: ./.resources/Refund Amount.resources/examples
+order: 1000

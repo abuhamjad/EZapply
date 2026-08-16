@@ -1,0 +1,28 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/verify-payu-payment"
+  method: POST
+  headers:
+    Content-Type: application/x-www-form-urlencoded
+  body:
+    type: urlencoded
+    content:
+      amount: "500"
+      email: john.doe@example.com
+      firstname: John
+      hash: <payu-hash>
+      productinfo: Product Purchase
+      status: success
+      txnid: txn_1234567890
+      udf1: "1"
+      udf2: Product
+      udf3: ""
+      udf4: ""
+      udf5: ""
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

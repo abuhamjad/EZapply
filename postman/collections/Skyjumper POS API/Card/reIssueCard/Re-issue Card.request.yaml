@@ -1,0 +1,17 @@
+$kind: http-request
+description: Re-issue Card
+url: "{{baseUrl}}/Card/reIssueCard"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_id": 1,
+      "newCardNo": "1000000002",
+      "oldcardNo": "1000000001"
+    }
+settings: {}
+examples: ./.resources/Re-issue Card.resources/examples
+order: 1000

@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get Receipt Setting
+url: "{{baseUrl}}/api/v1/get-receipt"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Receipt Setting.resources/examples
+order: 1000

@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get Transaction
+url: "{{baseUrl}}/Refund/getTransaction"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "Search": "",
+      "pageNumber": 1
+    }
+settings: {}
+examples: ./.resources/Get Transaction.resources/examples
+order: 1000

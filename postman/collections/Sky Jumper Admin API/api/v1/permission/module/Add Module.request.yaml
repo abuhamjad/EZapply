@@ -1,0 +1,17 @@
+$kind: http-request
+description: Add Module
+url: "{{baseUrl}}/api/v1/permission/module"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "is_active": 1,
+      "name": "Reports",
+      "order": 1
+    }
+settings: {}
+examples: ./.resources/Add Module.resources/examples
+order: 2000

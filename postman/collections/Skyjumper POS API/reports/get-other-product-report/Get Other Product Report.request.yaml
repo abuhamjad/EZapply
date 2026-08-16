@@ -1,0 +1,19 @@
+$kind: http-request
+description: Get Other Product Report
+url: "{{baseUrl}}/reports/get-other-product-report"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-14",
+      "limit": 10,
+      "location_id": 1,
+      "pageNumber": 1,
+      "start_date": "2026-07-01"
+    }
+settings: {}
+examples: ./.resources/Get Other Product Report.resources/examples
+order: 1000

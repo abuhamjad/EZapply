@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get Stock Details
+url: "{{baseUrl}}/dashboard/getStockDetails"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "product_id": 1,
+      "qty": 1
+    }
+settings: {}
+examples: ./.resources/Get Stock Details.resources/examples
+order: 1000

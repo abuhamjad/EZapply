@@ -29,7 +29,7 @@ class BotStartRequest(BaseModel):
     platforms: list[Platform] = [Platform.LINKEDIN]
     keywords: list[str] = Field(default_factory=lambda: ["Frontend Developer"])
     application_limit: int = 25
-    resume_id: str = "default"
+    resume_id: str | None = None
 
 
 class BotStartResponse(BaseModel):

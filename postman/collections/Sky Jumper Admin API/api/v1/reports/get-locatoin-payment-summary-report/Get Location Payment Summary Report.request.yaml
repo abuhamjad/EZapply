@@ -1,0 +1,12 @@
+$kind: http-request
+description: Get Location Payment Summary Report
+url: "{{baseUrl}}/api/v1/reports/get-locatoin-payment-summary-report"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+settings: {}
+examples: ./.resources/Get Location Payment Summary Report.resources/examples
+order: 1000

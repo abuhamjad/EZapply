@@ -1,0 +1,17 @@
+$kind: http-request
+description: Create Discount Reason
+url: "{{baseUrl}}/api/v1/discount-reasons"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "is_active": true,
+      "reason": "Loyal Customer"
+    }
+settings: {}
+examples: ./.resources/Create Discount Reason.resources/examples
+order: 2000

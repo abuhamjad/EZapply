@@ -1,0 +1,24 @@
+$kind: http-request
+description: Register Employee
+url: "{{baseUrl}}/api/v1/registration/employee"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "address": "123 Street",
+      "company_id": 1,
+      "designation_id": 1,
+      "email": "john.doe@example.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "location_id": 1,
+      "password": "pass123",
+      "phone_no": "9876543210",
+      "pincode": "400001"
+    }
+settings: {}
+examples: ./.resources/Register Employee.resources/examples
+order: 1000

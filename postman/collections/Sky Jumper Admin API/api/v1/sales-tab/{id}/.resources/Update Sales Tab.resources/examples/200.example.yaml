@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/sales-tab/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    id: "1"
+  body:
+    type: json
+    content: |-
+      {
+        "button_color_id": 1,
+        "display_order": 1,
+        "is_active": true,
+        "location_id": 1,
+        "price_type_id": 1,
+        "tab_name": "Food Updated"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

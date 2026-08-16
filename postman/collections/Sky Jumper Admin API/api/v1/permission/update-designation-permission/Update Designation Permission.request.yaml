@@ -1,0 +1,19 @@
+$kind: http-request
+description: Update Designation Permission
+url: "{{baseUrl}}/api/v1/permission/update-designation-permission"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "designation_id": 1,
+      "is_active": 1,
+      "route_id": 1,
+      "type": "route"
+    }
+settings: {}
+examples: ./.resources/Update Designation Permission.resources/examples
+order: 1000

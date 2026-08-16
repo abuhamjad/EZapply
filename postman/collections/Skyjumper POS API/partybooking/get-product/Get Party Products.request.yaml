@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Party Products
+url: "{{baseUrl}}/partybooking/get-product"
+method: GET
+settings: {}
+examples: ./.resources/Get Party Products.resources/examples
+order: 1000

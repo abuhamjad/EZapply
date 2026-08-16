@@ -1,0 +1,19 @@
+$kind: http-request
+description: Update Package
+url: "{{baseUrl}}/api/v1/update-package/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "amount_per_person": 500,
+      "is_active": true,
+      "name": "Birthday Package Updated"
+    }
+settings: {}
+examples: ./.resources/Update Package.resources/examples
+order: 1000

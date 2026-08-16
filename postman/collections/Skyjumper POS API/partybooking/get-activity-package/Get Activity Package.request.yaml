@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Activity Package
+url: "{{baseUrl}}/partybooking/get-activity-package"
+method: GET
+settings: {}
+examples: ./.resources/Get Activity Package.resources/examples
+order: 1000

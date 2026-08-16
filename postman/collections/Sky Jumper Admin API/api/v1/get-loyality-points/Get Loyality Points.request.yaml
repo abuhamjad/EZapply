@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get Loyality Points
+url: "{{baseUrl}}/api/v1/get-loyality-points"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Loyality Points.resources/examples
+order: 1000

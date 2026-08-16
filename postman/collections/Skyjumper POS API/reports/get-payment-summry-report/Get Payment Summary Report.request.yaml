@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get Payment Summary Report
+url: "{{baseUrl}}/reports/get-payment-summry-report"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-14",
+      "start_date": "2026-07-01"
+    }
+settings: {}
+examples: ./.resources/Get Payment Summary Report.resources/examples
+order: 1000

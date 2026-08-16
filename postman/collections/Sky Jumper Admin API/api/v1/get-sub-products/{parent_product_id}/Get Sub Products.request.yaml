@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Sub Products
+url: "{{baseUrl}}/api/v1/get-sub-products/:parent_product_id"
+method: GET
+pathVariables:
+  parent_product_id: "1"
+settings: {}
+examples: ./.resources/Get Sub Products.resources/examples
+order: 1000

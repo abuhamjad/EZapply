@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get Product Type By Location
+url: "{{baseUrl}}/api/v1/get-product-type-by-location"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "location_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Product Type By Location.resources/examples
+order: 1000

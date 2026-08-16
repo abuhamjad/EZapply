@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get Discount Reasons
+url: "{{baseUrl}}/api/v1/get-discount-reasons"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Discount Reasons.resources/examples
+order: 1000

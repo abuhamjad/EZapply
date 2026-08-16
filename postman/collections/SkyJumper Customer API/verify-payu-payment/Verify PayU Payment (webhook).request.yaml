@@ -1,0 +1,26 @@
+$kind: http-request
+description: PayU server-to-server callback (no auth). udf1 = order_id/party_id, udf2 = order_type ('Product'/'Card' vs anything else treated as Party).
+url: "{{baseUrl}}/verify-payu-payment"
+method: POST
+headers:
+  Content-Type: application/x-www-form-urlencoded
+body:
+  type: urlencoded
+  content:
+    amount: "500"
+    email: john.doe@example.com
+    firstname: John
+    hash: <payu-hash>
+    productinfo: Product Purchase
+    status: success
+    txnid: txn_1234567890
+    udf1: "1"
+    udf2: Product
+    udf3: ""
+    udf4: ""
+    udf5: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Verify PayU Payment (webhook).resources/examples
+order: 1000

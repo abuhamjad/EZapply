@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Card Price
+url: "{{baseUrl}}/Card/getCardPrice/:type"
+method: GET
+pathVariables:
+  type: ""
+settings: {}
+examples: ./.resources/Get Card Price.resources/examples
+order: 1000

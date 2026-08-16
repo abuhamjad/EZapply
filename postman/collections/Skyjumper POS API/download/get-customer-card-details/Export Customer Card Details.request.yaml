@@ -1,0 +1,17 @@
+$kind: http-request
+description: Export Customer Card Details
+url: "{{baseUrl}}/download/get-customer-card-details?start_date=&end_date=&location_id=&card_no=&phone_no=&limit=&page="
+method: GET
+queryParams:
+  start_date: ""
+  end_date: ""
+  location_id: ""
+  card_no: ""
+  phone_no: ""
+  limit: ""
+  page: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Export Customer Card Details.resources/examples
+order: 1000

@@ -1,0 +1,26 @@
+$kind: http-request
+description: Update Activity Product Type
+url: "{{baseUrl}}/api/v1/update-activity-product-type/:id"
+method: PUT
+headers:
+  Content-Type: multipart/form-data
+pathVariables:
+  id: "1"
+body:
+  type: formdata
+  content:
+    - type: text
+      key: display_order
+      value: "1"
+    - type: file
+      key: icon
+      src: []
+    - type: text
+      key: name
+      value: Trampoline Updated
+    - type: text
+      key: week_list
+      value: All Days
+settings: {}
+examples: ./.resources/Update Activity Product Type.resources/examples
+order: 1000

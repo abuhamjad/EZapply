@@ -1,0 +1,16 @@
+$kind: http-request
+description: Add Inventory
+url: "{{baseUrl}}/api/v1/inventory"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Sauce",
+      "unit": 1
+    }
+settings: {}
+examples: ./.resources/Add Inventory.resources/examples
+order: 2000

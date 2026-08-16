@@ -1,0 +1,18 @@
+$kind: http-request
+description: Add Play Point
+url: "{{baseUrl}}/order/addPlayPoint"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 100,
+      "card_no": "1000000001",
+      "payment_type_id": 1,
+      "play_point_qty": 1
+    }
+settings: {}
+examples: ./.resources/Add Play Point.resources/examples
+order: 1000

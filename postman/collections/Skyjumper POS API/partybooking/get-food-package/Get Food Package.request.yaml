@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Food Package
+url: "{{baseUrl}}/partybooking/get-food-package"
+method: GET
+settings: {}
+examples: ./.resources/Get Food Package.resources/examples
+order: 1000

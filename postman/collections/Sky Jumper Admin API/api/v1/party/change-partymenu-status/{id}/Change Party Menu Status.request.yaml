@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Party Menu Status
+url: "{{baseUrl}}/api/v1/party/change-partymenu-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Party Menu Status.resources/examples
+order: 1000

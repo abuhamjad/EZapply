@@ -1,0 +1,16 @@
+$kind: http-request
+description: Verify Refund
+url: "{{baseUrl}}/verify-refund"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "password": "Password123",
+      "username": "employee@example.com"
+    }
+settings: {}
+examples: ./.resources/Verify Refund.resources/examples
+order: 1000

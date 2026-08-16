@@ -1,0 +1,7 @@
+$kind: http-request
+description: Auth required. Renders a GST receipt as HTML for the given order_id belonging to the logged-in customer.
+url: "{{baseUrl}}/manage/get-gst-reciept/1"
+method: GET
+settings: {}
+examples: ./.resources/Get GST Receipt (HTML).resources/examples
+order: 1000

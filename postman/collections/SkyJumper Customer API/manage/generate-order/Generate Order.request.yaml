@@ -1,0 +1,21 @@
+$kind: http-request
+description: Auth required. Creates a pending order and returns a payment hash for Razorpay/PayU checkout. `order_type` must be one of Card, Play_Points, Membership, Party, front_desk, Product. `details` array is required when order_type is 'Card'. When order_type is 'Party', `order_type_id` should be the party_id and `amount` must match the party's advance amount.
+url: "{{baseUrl}}/manage/generate-order"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 500,
+      "details": [],
+      "firstname": "John",
+      "order_type": "Product",
+      "order_type_id": 1,
+      "productinfo": "Product Purchase",
+      "quantity": 1
+    }
+settings: {}
+examples: ./.resources/Generate Order.resources/examples
+order: 1000

@@ -7,7 +7,7 @@ import type {
   BotStatus,
   StatusInfo,
 } from "../types";
-import { AutomationService } from "../services";
+import { AutomationService, SavedInfoService } from "../services";
 import { isTerminalRunStatus, mapRunStatusToBotStatus } from "../types";
 
 const ACTIVE_RUN_STORAGE_KEY = "ezapply.activeRunId";
@@ -122,9 +122,20 @@ export function useBotState() {
       // Default to LinkedIn if none selected
       if (enabledPlatforms.length === 0) enabledPlatforms.push("linkedin");
 
+      const savedInfo = await SavedInfoService.getSavedInfo();
+      const keywords = Array.from(new Set([
+        ...(savedInfo.profile.target_titles || []),
+        ...(savedInfo.savedKeywords.map(k => k.text) || [])
+      ])).filter(Boolean);
+
+      if (keywords.length === 0) {
+        setError("Please add at least one target role or keyword in your Profile before starting.");
+        return null;
+      }
+
       const result = await AutomationService.startBot({
         platforms: enabledPlatforms,
-        keywords: [],
+        keywords: keywords,
         application_limit: 25,
       });
       setActiveRun(result);

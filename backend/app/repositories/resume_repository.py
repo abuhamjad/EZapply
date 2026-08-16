@@ -26,3 +26,7 @@ class ResumeRepository:
         await self.db.execute(update(Resume).values(is_default=False))
         await self.db.execute(update(Resume).where(Resume.id == resume_id).values(is_default=True))
         await self.db.commit()
+
+    async def get_default(self) -> Resume | None:
+        result = await self.db.execute(select(Resume).where(Resume.is_default.is_(True)))
+        return result.scalar_one_or_none()

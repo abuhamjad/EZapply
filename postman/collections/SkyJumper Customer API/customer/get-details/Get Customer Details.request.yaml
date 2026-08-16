@@ -1,0 +1,7 @@
+$kind: http-request
+description: Auth required. Returns the logged-in customer's profile including membership info.
+url: "{{baseUrl}}/customer/get-details"
+method: GET
+settings: {}
+examples: ./.resources/Get Customer Details.resources/examples
+order: 1000

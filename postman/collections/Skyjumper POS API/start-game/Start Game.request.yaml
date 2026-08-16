@@ -1,0 +1,19 @@
+$kind: http-request
+description: Start Game
+url: "{{baseUrl}}/start-game"
+method: POST
+headers:
+  api-x-key: "{{api_x_key}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_no": "1000000001",
+      "machine_id": "M001"
+    }
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Start Game.resources/examples
+order: 1000

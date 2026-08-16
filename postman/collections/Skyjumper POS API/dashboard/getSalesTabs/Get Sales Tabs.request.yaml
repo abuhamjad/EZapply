@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Sales Tabs
+url: "{{baseUrl}}/dashboard/getSalesTabs"
+method: GET
+settings: {}
+examples: ./.resources/Get Sales Tabs.resources/examples
+order: 1000

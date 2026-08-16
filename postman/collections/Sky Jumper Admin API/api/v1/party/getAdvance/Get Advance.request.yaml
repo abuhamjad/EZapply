@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Advance
+url: "{{baseUrl}}/api/v1/party/getAdvance"
+method: GET
+settings: {}
+examples: ./.resources/Get Advance.resources/examples
+order: 1000

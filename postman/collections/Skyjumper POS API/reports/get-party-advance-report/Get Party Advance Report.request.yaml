@@ -1,0 +1,18 @@
+$kind: http-request
+description: Get Party Advance Report
+url: "{{baseUrl}}/reports/get-party-advance-report"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-14",
+      "limit": 10,
+      "page_number": 1,
+      "start_date": "2026-07-01"
+    }
+settings: {}
+examples: ./.resources/Get Party Advance Report.resources/examples
+order: 1000

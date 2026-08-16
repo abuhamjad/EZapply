@@ -1,0 +1,16 @@
+$kind: http-request
+description: Get Customer Feedback
+url: "{{baseUrl}}/api/v1/dashboard/get-customer-feedback"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "mobile_no": "9876543210",
+      "pageNumber": 1
+    }
+settings: {}
+examples: ./.resources/Get Customer Feedback.resources/examples
+order: 1000

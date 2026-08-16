@@ -1,0 +1,19 @@
+$kind: http-request
+description: Get Customer Card Transaction
+url: "{{baseUrl}}/reports/get-customer-card-transaction"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_no": "1000000001",
+      "end_date": "2026-07-14",
+      "limit": 10,
+      "page": 1,
+      "start_date": "2026-07-01"
+    }
+settings: {}
+examples: ./.resources/Get Customer Card Transaction.resources/examples
+order: 1000

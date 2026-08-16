@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Running Party Details
+url: "{{baseUrl}}/partybooking/get-running-party-details/:id"
+method: GET
+pathVariables:
+  id: ""
+settings: {}
+examples: ./.resources/Get Running Party Details.resources/examples
+order: 1000

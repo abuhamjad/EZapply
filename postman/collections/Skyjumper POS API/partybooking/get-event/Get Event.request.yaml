@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Event
+url: "{{baseUrl}}/partybooking/get-event"
+method: GET
+settings: {}
+examples: ./.resources/Get Event.resources/examples
+order: 1000

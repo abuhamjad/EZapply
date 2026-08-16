@@ -1,0 +1,12 @@
+$kind: http-request
+description: Export Payment Summary Report
+url: "{{baseUrl}}/download/get-payment-summry-report?start_date=&end_date="
+method: GET
+queryParams:
+  start_date: ""
+  end_date: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Export Payment Summary Report.resources/examples
+order: 1000

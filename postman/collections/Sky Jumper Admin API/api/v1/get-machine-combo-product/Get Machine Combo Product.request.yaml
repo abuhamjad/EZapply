@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Machine Combo Product
+url: "{{baseUrl}}/api/v1/get-machine-combo-product"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "limit": 10,
+      "offset": 0
+    }
+settings: {}
+examples: ./.resources/Get Machine Combo Product.resources/examples
+order: 1000

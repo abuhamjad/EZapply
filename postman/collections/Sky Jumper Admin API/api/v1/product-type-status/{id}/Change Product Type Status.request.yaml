@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Product Type Status
+url: "{{baseUrl}}/api/v1/product-type-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Product Type Status.resources/examples
+order: 1000

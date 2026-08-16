@@ -1,0 +1,23 @@
+$kind: http-request
+description: Update Activity Product
+url: "{{baseUrl}}/api/v1/update-activity-product/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "activity_type_id": 1,
+      "amount": 300,
+      "display_order": 1,
+      "name": "Trampoline Jump Updated",
+      "play_point": 10,
+      "tax_rate_id": 1,
+      "time": 30
+    }
+settings: {}
+examples: ./.resources/Update Activity Product.resources/examples
+order: 1000

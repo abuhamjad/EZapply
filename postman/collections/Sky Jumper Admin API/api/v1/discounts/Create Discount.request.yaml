@@ -1,0 +1,20 @@
+$kind: http-request
+description: Create Discount
+url: "{{baseUrl}}/api/v1/discounts"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "discount": 10,
+      "end_date": "2026-12-31",
+      "is_active": true,
+      "name": "Festive Discount",
+      "type": "percentage"
+    }
+settings: {}
+examples: ./.resources/Create Discount.resources/examples
+order: 2000

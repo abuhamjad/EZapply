@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/companies/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    id: "1"
+  body:
+    type: json
+    content: |-
+      {
+        "address": "123 Business Park",
+        "city_id": 1,
+        "contact_person_name": "Jane Smith",
+        "email": "contact@skyjumper.com",
+        "is_active": true,
+        "mobile": "9876543210",
+        "name": "Sky Jumper Pvt Ltd",
+        "pincode": 400001,
+        "state_id": 1
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

@@ -1,0 +1,23 @@
+$kind: http-request
+description: Update Party Menu
+url: "{{baseUrl}}/api/v1/party/update-partymenu/:id"
+method: PUT
+headers:
+  Content-Type: multipart/form-data
+pathVariables:
+  id: "1"
+body:
+  type: formdata
+  content:
+    - type: text
+      key: food_package_id
+      value: "1"
+    - type: text
+      key: location_id
+      value: "1"
+    - type: file
+      key: menu
+      src: []
+settings: {}
+examples: ./.resources/Update Party Menu.resources/examples
+order: 1000

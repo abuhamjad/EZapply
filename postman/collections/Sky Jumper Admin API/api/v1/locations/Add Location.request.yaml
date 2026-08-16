@@ -1,0 +1,45 @@
+$kind: http-request
+description: Add Location
+url: "{{baseUrl}}/api/v1/locations"
+method: POST
+headers:
+  Content-Type: multipart/form-data
+body:
+  type: formdata
+  content:
+    - type: text
+      key: address
+      value: 123 Mall Road
+    - type: file
+      key: brand_image
+      src: []
+    - type: text
+      key: company_id
+      value: "1"
+    - type: text
+      key: country_id
+      value: "1"
+    - type: text
+      key: email
+      value: location@example.com
+    - type: text
+      key: gst_no
+      value: 27AAAAA0000A1Z5
+    - type: text
+      key: is_active
+      value: "true"
+    - type: file
+      key: logo
+      src: []
+    - type: text
+      key: name
+      value: Sky Jumper Andheri
+    - type: text
+      key: phone_no
+      value: "9876543210"
+    - type: text
+      key: pincode
+      value: "400001"
+settings: {}
+examples: ./.resources/Add Location.resources/examples
+order: 2000

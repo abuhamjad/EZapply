@@ -1,0 +1,23 @@
+$kind: http-request
+description: Add Combo Product
+url: "{{baseUrl}}/api/v1/add-combo-product"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 1000,
+      "combo_name": "Combo A",
+      "company_id": 1,
+      "is_active": true,
+      "special_price": 900,
+      "sub_products": [
+        1,
+        2
+      ]
+    }
+settings: {}
+examples: ./.resources/Add Combo Product.resources/examples
+order: 1000

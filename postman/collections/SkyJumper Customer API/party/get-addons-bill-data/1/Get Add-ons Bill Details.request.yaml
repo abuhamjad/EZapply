@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Add-ons Bill Details
+url: "{{baseUrl}}/party/get-addons-bill-data/1"
+method: GET
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Add-ons Bill Details.resources/examples
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Transactions
+url: "{{baseUrl}}/api/v1/manage-void-transaction/get-transactions"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "page_no": 1,
+      "page_size": 10,
+      "transaction_type": "order"
+    }
+settings: {}
+examples: ./.resources/Get Transactions.resources/examples
+order: 1000

@@ -1,0 +1,454 @@
+{
+  "info": {
+    "_postman_id": "ezapply-api-collection-v1",
+    "name": "EZApply API Collection",
+    "description": "Combined API collection for testing all EZApply backend endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Saved Info",
+      "item": [
+        {
+          "name": "Get Saved Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/saved-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "saved-info"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Saved Info",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personal_info\": {\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"+1234567890\",\n    \"location\": \"New York, NY\",\n    \"linkedin_url\": \"https://linkedin.com/in/johndoe\",\n    \"github_url\": \"https://github.com/johndoe\",\n    \"portfolio_url\": \"https://johndoe.com\"\n  },\n  \"work_experience\": [],\n  \"education\": [],\n  \"skills\": [\n    \"Python\",\n    \"FastAPI\",\n    \"React\",\n    \"TypeScript\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/saved-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "saved-info"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Keyword",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Software Engineer\",\n  \"kind\": \"target_role\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/saved-info/keywords",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "saved-info",
+                "keywords"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Keyword",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/saved-info/keywords/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "saved-info",
+                "keywords",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Software Developer Template\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/saved-info/templates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "saved-info",
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Template",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/saved-info/templates/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "saved-info",
+                "templates",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resumes",
+      "item": [
+        {
+          "name": "List Resumes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/resumes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resumes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/resumes/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resumes",
+                "upload"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set Default Resume",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/resumes/resume_123/default",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "resumes",
+                "resume_123",
+                "default"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bot",
+      "item": [
+        {
+          "name": "Get Bot State",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bot",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Bot Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"idle\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bot/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Bot Config",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"linkedin\": true,\n  \"indeed\": false,\n  \"glassdoor\": false,\n  \"dice\": false,\n  \"job_type\": \"Full-time\",\n  \"location\": \"Remote\",\n  \"min_salary\": 100000,\n  \"apply_delay\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bot/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot",
+                "config"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start Bot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platforms\": [\n    \"linkedin\"\n  ],\n  \"search_query\": \"Software Engineer\",\n  \"location\": \"Remote\",\n  \"max_applications\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bot/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot",
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Bot Run Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bot/status/run_123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot",
+                "status",
+                "run_123"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Stop Bot Run",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bot/stop/run_123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot",
+                "stop",
+                "run_123"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resolve Screening Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_id\": \"q_123\",\n  \"answer\": \"5 years\",\n  \"remember_for_future\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bot/resolve-question",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bot",
+                "resolve-question"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications & Stats",
+      "item": [
+        {
+          "name": "List Applications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/applications?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "applications"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Stats Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stats/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stats",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

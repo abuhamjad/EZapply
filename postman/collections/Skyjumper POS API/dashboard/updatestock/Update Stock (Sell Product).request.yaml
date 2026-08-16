@@ -1,0 +1,26 @@
+$kind: http-request
+description: Update Stock (Sell Product)
+url: "{{baseUrl}}/dashboard/updatestock"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_id": 1,
+      "data": [],
+      "discount_reason_id": 1,
+      "discount_type_id": 1,
+      "is_combo": 0,
+      "manualDiscount": 0,
+      "manualDiscountType": 0,
+      "payment_mode": 1,
+      "priceTypeId": 1,
+      "product_type_id": 1,
+      "promo_code": "",
+      "total_amount": 100
+    }
+settings: {}
+examples: ./.resources/Update Stock (Sell Product).resources/examples
+order: 1000

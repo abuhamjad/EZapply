@@ -1,0 +1,31 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/dashboard/book-package"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "card_id": 1,
+        "data": [],
+        "discount": 0,
+        "discount_reason": "",
+        "mobile_no": "9876543210",
+        "payment_mode": 1,
+        "priceTypeId": 1,
+        "promo_code": "",
+        "total_amount": 100
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

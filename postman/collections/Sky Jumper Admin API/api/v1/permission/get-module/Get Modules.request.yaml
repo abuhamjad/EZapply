@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Modules
+url: "{{baseUrl}}/api/v1/permission/get-module"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "is_active": 1,
+      "limit": 10,
+      "pageNumber": 1
+    }
+settings: {}
+examples: ./.resources/Get Modules.resources/examples
+order: 1000

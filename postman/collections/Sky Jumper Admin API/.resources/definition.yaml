@@ -1,0 +1,17 @@
+$kind: collection
+name: Sky Jumper Admin API
+description: |-
+  Postman collection covering all REST endpoints exposed by the Sky Jumper Admin API (Express + Sequelize). Base path for every request is {{baseUrl}}/api/v1.
+
+  Authentication: call Auth > Login to obtain a JWT, then set the `token` collection variable (or it will be set automatically if you add a test script). Protected routes send `Authorization: Bearer {{token}}`.
+variables:
+  - key: baseUrl
+    value: http://localhost:3000
+    disabled: false
+  - key: supabase_service_role_api_key_0538
+    secret: true
+    disabled: false
+auth:
+  type: bearer
+  credentials:
+    token: "{{supabase_service_role_api_key_0538}}"

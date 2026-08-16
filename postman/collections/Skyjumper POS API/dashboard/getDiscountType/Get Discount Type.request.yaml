@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Discount Type
+url: "{{baseUrl}}/dashboard/getDiscountType"
+method: GET
+settings: {}
+examples: ./.resources/Get Discount Type.resources/examples
+order: 1000

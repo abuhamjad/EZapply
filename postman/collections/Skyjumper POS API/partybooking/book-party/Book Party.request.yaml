@@ -1,0 +1,16 @@
+$kind: http-request
+description: Book Party
+url: "{{baseUrl}}/partybooking/book-party"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "data": [],
+      "step_no": 1
+    }
+settings: {}
+examples: ./.resources/Book Party.resources/examples
+order: 1000

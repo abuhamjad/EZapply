@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Refund Reason
+url: "{{baseUrl}}/Refund/refundReason"
+method: GET
+settings: {}
+examples: ./.resources/Get Refund Reason.resources/examples
+order: 1000

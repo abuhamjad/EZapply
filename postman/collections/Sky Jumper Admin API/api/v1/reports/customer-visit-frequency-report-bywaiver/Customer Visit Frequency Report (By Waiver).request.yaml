@@ -1,0 +1,15 @@
+$kind: http-request
+description: Customer Visit Frequency Report (By Waiver)
+url: "{{baseUrl}}/api/v1/reports/customer-visit-frequency-report-bywaiver"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-09"
+    }
+settings: {}
+examples: ./.resources/Customer Visit Frequency Report (By Waiver).resources/examples
+order: 1000

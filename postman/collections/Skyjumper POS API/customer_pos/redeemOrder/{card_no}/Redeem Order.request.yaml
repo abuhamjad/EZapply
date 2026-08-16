@@ -1,0 +1,17 @@
+$kind: http-request
+description: Redeem Order
+url: "{{baseUrl}}/customer_pos/redeemOrder/:card_no"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  card_no: ""
+body:
+  type: json
+  content: |-
+    {
+      "product_id": 1
+    }
+settings: {}
+examples: ./.resources/Redeem Order.resources/examples
+order: 1000

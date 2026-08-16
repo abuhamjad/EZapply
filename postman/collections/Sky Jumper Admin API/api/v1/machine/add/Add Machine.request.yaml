@@ -1,0 +1,20 @@
+$kind: http-request
+description: Add Machine
+url: "{{baseUrl}}/api/v1/machine/add"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "animation": "green",
+      "location_id": 1,
+      "machine_id": "M001",
+      "machine_name": "Trampoline Machine 1",
+      "product_id": 1,
+      "type": "trampoline"
+    }
+settings: {}
+examples: ./.resources/Add Machine.resources/examples
+order: 1000

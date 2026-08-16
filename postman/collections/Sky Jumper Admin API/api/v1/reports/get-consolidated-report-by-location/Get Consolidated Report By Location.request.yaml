@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Consolidated Report By Location
+url: "{{baseUrl}}/api/v1/reports/get-consolidated-report-by-location"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-09",
+      "limit": 10,
+      "page_number": 1
+    }
+settings: {}
+examples: ./.resources/Get Consolidated Report By Location.resources/examples
+order: 1000

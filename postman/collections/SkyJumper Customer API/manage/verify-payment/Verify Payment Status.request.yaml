@@ -1,0 +1,15 @@
+$kind: http-request
+description: Auth required. `data` is an app-encrypted (utils/crypto.js) JSON payload; server decrypts it, verifies the Razorpay/PayU payment_id, then confirms the order.
+url: "{{baseUrl}}/manage/verify-payment"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "data": "<AES-encrypted JSON string: { customer_order_id: number, payment_id: string, order_type: string }>"
+    }
+settings: {}
+examples: ./.resources/Verify Payment Status.resources/examples
+order: 1000

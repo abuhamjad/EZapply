@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Display Order
+url: "{{baseUrl}}/api/v1/get-display-order"
+method: GET
+settings: {}
+examples: ./.resources/Get Display Order.resources/examples
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+description: Export Recharge Card Report
+url: "{{baseUrl}}/download/get-recharge-card?start_date=&end_date=&location_id=&card_no=&phone_no=&limit=&page="
+method: GET
+queryParams:
+  start_date: ""
+  end_date: ""
+  location_id: ""
+  card_no: ""
+  phone_no: ""
+  limit: ""
+  page: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Export Recharge Card Report.resources/examples
+order: 1000

@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Customer Play Point
+url: "{{baseUrl}}/dashboard/getCustomerPlayPoint/:card_no"
+method: GET
+pathVariables:
+  card_no: ""
+settings: {}
+examples: ./.resources/Get Customer Play Point.resources/examples
+order: 1000

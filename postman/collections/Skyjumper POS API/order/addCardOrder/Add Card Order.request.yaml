@@ -1,0 +1,18 @@
+$kind: http-request
+description: Add Card Order
+url: "{{baseUrl}}/order/addCardOrder"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "card_id": 1,
+      "data": [],
+      "payment_type_id": 1,
+      "total_amount": 100
+    }
+settings: {}
+examples: ./.resources/Add Card Order.resources/examples
+order: 1000

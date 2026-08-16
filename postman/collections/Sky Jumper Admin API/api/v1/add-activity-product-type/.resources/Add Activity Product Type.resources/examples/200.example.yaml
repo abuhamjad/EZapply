@@ -1,0 +1,44 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/add-activity-product-type"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: multipart/form-data
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: formdata
+    content:
+      - type: text
+        key: company_id
+        value: "1"
+      - type: text
+        key: display_name
+        value: Trampoline Zone
+      - type: text
+        key: display_order
+        value: "1"
+      - type: file
+        key: icon
+        src: []
+      - type: text
+        key: is_multiple
+        value: "0"
+      - type: text
+        key: location_id
+        value: 1,2
+      - type: text
+        key: name
+        value: Trampoline
+      - type: text
+        key: week_list
+        value: All Days
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

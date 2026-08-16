@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Sky Balance Report
+url: "{{baseUrl}}/api/v1/reports/get-sky-balance"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-09",
+      "limit": 10,
+      "page": 1
+    }
+settings: {}
+examples: ./.resources/Get Sky Balance Report.resources/examples
+order: 1000

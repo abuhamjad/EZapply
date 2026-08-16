@@ -1,0 +1,18 @@
+$kind: http-request
+description: Update Payment Type
+url: "{{baseUrl}}/api/v1/payment-type/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "is_active": true,
+      "type": "Card"
+    }
+settings: {}
+examples: ./.resources/Update Payment Type.resources/examples
+order: 1000

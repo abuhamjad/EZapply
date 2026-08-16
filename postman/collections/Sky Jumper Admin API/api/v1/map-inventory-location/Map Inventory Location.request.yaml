@@ -1,0 +1,18 @@
+$kind: http-request
+description: Map Inventory Location
+url: "{{baseUrl}}/api/v1/map-inventory-location"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "inventory_product_id": 1,
+      "location_id": 1,
+      "price": 10,
+      "unit": 1
+    }
+settings: {}
+examples: ./.resources/Map Inventory Location.resources/examples
+order: 1000

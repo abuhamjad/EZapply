@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Payment Type
+url: "{{baseUrl}}/features/getPaymentType"
+method: GET
+settings: {}
+examples: ./.resources/Get Payment Type.resources/examples
+order: 1000

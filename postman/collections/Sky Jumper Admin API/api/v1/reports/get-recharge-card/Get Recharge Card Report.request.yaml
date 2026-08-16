@@ -1,0 +1,18 @@
+$kind: http-request
+description: Get Recharge Card Report
+url: "{{baseUrl}}/api/v1/reports/get-recharge-card"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-09",
+      "limit": 10,
+      "location_id": 1,
+      "page": 1
+    }
+settings: {}
+examples: ./.resources/Get Recharge Card Report.resources/examples
+order: 1000

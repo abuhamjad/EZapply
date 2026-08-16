@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Duration Status
+url: "{{baseUrl}}/api/v1/duration-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Duration Status.resources/examples
+order: 1000

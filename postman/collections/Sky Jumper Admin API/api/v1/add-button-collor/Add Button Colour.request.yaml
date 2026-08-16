@@ -1,0 +1,18 @@
+$kind: http-request
+description: Add Button Colour
+url: "{{baseUrl}}/api/v1/add-button-collor"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "code": "#FF0000",
+      "company_id": 1,
+      "is_active": true,
+      "name": "Red"
+    }
+settings: {}
+examples: ./.resources/Add Button Colour.resources/examples
+order: 1000

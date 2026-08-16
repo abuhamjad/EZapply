@@ -20,18 +20,22 @@ technical here — worth checking before running this against real accounts.
 This file intentionally stays thin: platform-specific selectors/logic live
 in automation/platforms/*.py so engine.py never branches on "if linkedin".
 """
+import asyncio
 import json
 from datetime import datetime, timezone
+
+from sqlalchemy import select
 
 from app.automation.form_filler import FormFiller
 from app.automation.platforms import indeed, linkedin
 from app.automation.session_manager import PlatformSessionManager
-from app.core.constants import BotRunStatus, Platform
+from app.core.constants import ApplicationStatus, BotRunStatus, Platform
 from app.core.logging import get_logger
 from app.database.connection import AsyncSessionLocal
+from app.models.bot import BotConfig
 from app.repositories.bot_repository import BotRepository
 from app.services.application import ApplicationTrackingService
-from app.core.constants import ApplicationStatus
+from app.services.resume import ResumeService
 
 logger = get_logger(__name__)
 
@@ -46,6 +50,7 @@ async def run_automation(bot_run_id: str) -> None:
     Entry point launched via `asyncio.create_task`. Owns its own DB session
     since it runs outside the request/response cycle.
     """
+    logger.info("[run_automation] STARTED for run_id=%s", bot_run_id)
     async with AsyncSessionLocal() as db:
         repo = BotRepository(db)
         run = None
@@ -63,11 +68,44 @@ async def run_automation(bot_run_id: str) -> None:
             # fast-forward to. Otherwise start from the very beginning.
             resume_ctx = json.loads(run.resume_context_json) if run.resume_context_json else None
 
+            # Fetch BotConfig for location/delay/salary etc.
+            config_result = await db.execute(select(BotConfig).where(BotConfig.id == "default"))
+            bot_config = config_result.scalar_one_or_none()
+
+            # Fetch resume path if resume_id is set, else fall back to default
+            resume_service = ResumeService(db)
+            resume_path = None
+            if run.resume_id and run.resume_id != "default":
+                resume_db = await resume_service.repo.get(run.resume_id)
+                if resume_db:
+                    resume_path = resume_db.stored_path
+            else:
+                # Fall back to the default resume
+                resume_db = await resume_service.get_default()
+                if resume_db:
+                    resume_path = resume_db.stored_path
+
             run = await repo.update(run, status=BotRunStatus.RUNNING.value)
 
             session_manager = PlatformSessionManager()
-            form_filler = FormFiller(db=db, bot_run_id=bot_run_id)
+            form_filler = FormFiller(db=db, bot_run_id=bot_run_id, resume_path=resume_path)
             tracking_service = ApplicationTrackingService(db)
+
+            location = bot_config.location if bot_config else None
+            job_type = bot_config.job_type if bot_config else None
+            min_salary = bot_config.min_salary if bot_config else None
+            apply_delay = bot_config.apply_delay if bot_config else 0
+
+            logger.info(
+                "[run_automation] run_id=%s platform=%s keywords=%s location=%s job_type=%s min_salary=%s resume_ctx=%s",
+                bot_run_id,
+                platforms,
+                keywords,
+                location,
+                job_type,
+                min_salary,
+                resume_ctx,
+            )
 
             async with session_manager.browser_session() as browser:
                 for platform_name in platforms:
@@ -80,9 +118,35 @@ async def run_automation(bot_run_id: str) -> None:
                         logger.warning("No adapter for platform: %s", platform_name)
                         continue
 
+                    # Session/Login handling
                     page = await session_manager.get_authenticated_page(browser, platform_name)
+                    if hasattr(adapter, "ensure_logged_in"):
+                        logger.info("[run_automation] ensuring login for platform=%s run_id=%s", platform_name, bot_run_id)
+                        await adapter.ensure_logged_in(page)
+                        await session_manager.save_session(page, platform_name)
 
-                    job_listings = await adapter.search_jobs(page, keywords=keywords)
+                    location = bot_config.location if bot_config else None
+                    job_type = bot_config.job_type if bot_config else None
+                    min_salary = bot_config.min_salary if bot_config else None
+                    apply_delay = bot_config.apply_delay if bot_config else 0
+
+                    logger.info(
+                        "[run_automation] platform=%s run_id=%s calling search_jobs with keywords=%s location=%s job_type=%s min_salary=%s",
+                        platform_name,
+                        bot_run_id,
+                        keywords,
+                        location,
+                        job_type,
+                        min_salary,
+                    )
+
+                    job_listings = await adapter.search_jobs(
+                        page,
+                        keywords=keywords,
+                        location=location,
+                        job_type=job_type,
+                        min_salary=min_salary,
+                    )
 
                     # Fast-forward to the job we paused on, if resuming.
                     if resume_ctx and platform_name == resume_ctx["platform"]:
@@ -118,6 +182,8 @@ async def run_automation(bot_run_id: str) -> None:
                             run = await repo.update(
                                 run, applications_submitted=run.applications_submitted + 1
                             )
+                            if apply_delay > 0:
+                                await asyncio.sleep(apply_delay)
 
             await repo.update(
                 run,
@@ -128,14 +194,15 @@ async def run_automation(bot_run_id: str) -> None:
 
         except Exception as exc:  # noqa: BLE001
             logger.exception("Automation run %s failed", bot_run_id)
-            if "Executable doesn't exist" in str(exc):
+            err_msg = str(exc) if str(exc).strip() else f"{type(exc).__name__}: {exc!r}"
+            if "Executable doesn't exist" in err_msg:
                 logger.error(
                     "Playwright browser executable is missing for run %s. "
                     "Run `playwright install chromium` in this environment.",
                     bot_run_id,
                 )
             if run is not None:
-                await repo.update(run, status=BotRunStatus.FAILED.value, error_message=str(exc))
+                await repo.update(run, status=BotRunStatus.FAILED.value, error_message=err_msg)
 
 
 def _fast_forward(job_listings: list[dict], job_url: str | None) -> list[dict]:

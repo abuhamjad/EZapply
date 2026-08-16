@@ -1,0 +1,11 @@
+$kind: http-request
+description: Get Bill Details
+url: "{{baseUrl}}/party/get-bill-data?party_id=1"
+method: GET
+queryParams:
+  party_id: "1"
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Bill Details.resources/examples
+order: 1000

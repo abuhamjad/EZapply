@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Card Price Status
+url: "{{baseUrl}}/api/v1/change-status-card-price/:cardId"
+method: GET
+pathVariables:
+  cardId: "1"
+settings: {}
+examples: ./.resources/Change Card Price Status.resources/examples
+order: 1000

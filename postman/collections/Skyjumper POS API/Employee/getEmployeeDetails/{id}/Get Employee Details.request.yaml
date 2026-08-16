@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Employee Details
+url: "{{baseUrl}}/Employee/getEmployeeDetails/:id"
+method: GET
+pathVariables:
+  id: ""
+settings: {}
+examples: ./.resources/Get Employee Details.resources/examples
+order: 1000

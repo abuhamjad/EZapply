@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get All Modules Routes
+url: "{{baseUrl}}/api/v1/permission/get-all-modules"
+method: GET
+settings: {}
+examples: ./.resources/Get All Modules Routes.resources/examples
+order: 1000

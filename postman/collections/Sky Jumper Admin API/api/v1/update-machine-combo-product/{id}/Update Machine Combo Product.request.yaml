@@ -1,0 +1,24 @@
+$kind: http-request
+description: Update Machine Combo Product
+url: "{{baseUrl}}/api/v1/update-machine-combo-product/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "amount": 800,
+      "combo_name": "Combo Machine A Updated",
+      "is_active": true,
+      "special_price": 700,
+      "sub_products": [
+        1,
+        2
+      ]
+    }
+settings: {}
+examples: ./.resources/Update Machine Combo Product.resources/examples
+order: 1000

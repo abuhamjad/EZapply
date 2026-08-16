@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Price Type Status
+url: "{{baseUrl}}/api/v1/price-type-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Price Type Status.resources/examples
+order: 1000

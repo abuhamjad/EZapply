@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Company Receipt
+url: "{{baseUrl}}/api/v1/get-company-receipt"
+method: GET
+settings: {}
+examples: ./.resources/Get Company Receipt.resources/examples
+order: 1000

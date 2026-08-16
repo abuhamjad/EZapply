@@ -1,0 +1,20 @@
+$kind: http-request
+description: Update Unit Master
+url: "{{baseUrl}}/api/v1/unit-master/:id"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "is_active": true,
+      "multiplier": 1,
+      "name": "kg",
+      "type": "weight"
+    }
+settings: {}
+examples: ./.resources/Update Unit Master.resources/examples
+order: 1000

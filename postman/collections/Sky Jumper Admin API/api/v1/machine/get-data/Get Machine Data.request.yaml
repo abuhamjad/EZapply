@@ -1,0 +1,17 @@
+$kind: http-request
+description: Get Machine Data
+url: "{{baseUrl}}/api/v1/machine/get-data"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "location_id": 1,
+      "page_number": 1,
+      "page_size": 10
+    }
+settings: {}
+examples: ./.resources/Get Machine Data.resources/examples
+order: 1000

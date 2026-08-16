@@ -1,0 +1,32 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/registration/employee"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "address": "123 Street",
+        "company_id": 1,
+        "designation_id": 1,
+        "email": "john.doe@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "location_id": 1,
+        "password": "pass123",
+        "phone_no": "9876543210",
+        "pincode": "400001"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

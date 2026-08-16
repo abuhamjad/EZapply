@@ -27,6 +27,14 @@ class QuestionRepository:
         )
         return result.scalars().first()
 
+    async def get_resolved_for_run(self, bot_run_id: str) -> list[ScreeningQuestion]:
+        result = await self.db.execute(
+            select(ScreeningQuestion)
+            .where(ScreeningQuestion.bot_run_id == bot_run_id, ScreeningQuestion.resolved.is_(True))
+            .order_by(ScreeningQuestion.created_at.desc())
+        )
+        return list(result.scalars().all())
+
     async def resolve_screening_question(self, question: ScreeningQuestion, answer: str) -> ScreeningQuestion:
         question.answer = answer
         question.resolved = True

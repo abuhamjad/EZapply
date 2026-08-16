@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Discount Reason Status
+url: "{{baseUrl}}/api/v1/discount-reason-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Discount Reason Status.resources/examples
+order: 1000

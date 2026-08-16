@@ -1,0 +1,12 @@
+$kind: http-request
+description: Customer Membership Report
+url: "{{baseUrl}}/api/v1/reports/customer-membership-report"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+settings: {}
+examples: ./.resources/Customer Membership Report.resources/examples
+order: 1000

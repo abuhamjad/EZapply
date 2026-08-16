@@ -1,0 +1,12 @@
+$kind: http-request
+description: Customer Report By Age
+url: "{{baseUrl}}/api/v1/reports/customer-report-by-age"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+settings: {}
+examples: ./.resources/Customer Report By Age.resources/examples
+order: 1000

@@ -1,0 +1,16 @@
+$kind: http-request
+description: Auth required. Validates a promo code for a location and returns discount details.
+url: "{{baseUrl}}/manage/check-coupon"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "location_id": "1",
+      "promo_code": "WELCOME10"
+    }
+settings: {}
+examples: ./.resources/Check Coupon.resources/examples
+order: 1000

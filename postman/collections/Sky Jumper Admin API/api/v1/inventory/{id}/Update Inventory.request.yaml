@@ -1,0 +1,22 @@
+$kind: http-request
+description: Update Inventory
+url: "{{baseUrl}}/api/v1/inventory/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "is_active": true,
+      "name": "Sauce Updated",
+      "qty": 10,
+      "sale_product_id": 1,
+      "unit": 1
+    }
+settings: {}
+examples: ./.resources/Update Inventory.resources/examples
+order: 1000

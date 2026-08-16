@@ -1,0 +1,11 @@
+$kind: http-request
+description: No auth required (registered before the verifyToken middleware). Omit location_id query param to fetch all active locations.
+url: "{{baseUrl}}/manage/get-location?location_id=1"
+method: GET
+queryParams:
+  location_id: "1"
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Location (public).resources/examples
+order: 1000

@@ -1,0 +1,22 @@
+$kind: http-request
+description: Update Sales Tab
+url: "{{baseUrl}}/api/v1/sales-tab/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "button_color_id": 1,
+      "display_order": 1,
+      "is_active": true,
+      "location_id": 1,
+      "price_type_id": 1,
+      "tab_name": "Food Updated"
+    }
+settings: {}
+examples: ./.resources/Update Sales Tab.resources/examples
+order: 1000

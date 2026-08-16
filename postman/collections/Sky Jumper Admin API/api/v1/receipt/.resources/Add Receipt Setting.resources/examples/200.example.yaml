@@ -1,0 +1,32 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/receipt"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: multipart/form-data
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: formdata
+    content:
+      - type: text
+        key: company_id
+        value: "1"
+      - type: text
+        key: data
+        value: "{}"
+      - type: text
+        key: is_active
+        value: "1"
+      - type: file
+        key: logo
+        src: []
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

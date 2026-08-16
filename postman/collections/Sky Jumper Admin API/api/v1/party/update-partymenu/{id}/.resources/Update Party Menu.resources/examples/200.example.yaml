@@ -1,0 +1,31 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/v1/party/update-partymenu/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: multipart/form-data
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    id: "1"
+  body:
+    type: formdata
+    content:
+      - type: text
+        key: food_package_id
+        value: "1"
+      - type: text
+        key: location_id
+        value: "1"
+      - type: file
+        key: menu
+        src: []
+response:
+  statusCode: 200
+  statusText: OK
+  body:
+    type: text
+    content: ""
+order: 1000

@@ -1,0 +1,16 @@
+$kind: http-request
+description: Export Direct Transaction Report
+url: "{{baseUrl}}/download/get-direct-transaction?start_date=&end_date=&location_id=&phone_no=&limit=&page="
+method: GET
+queryParams:
+  start_date: ""
+  end_date: ""
+  location_id: ""
+  phone_no: ""
+  limit: ""
+  page: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Export Direct Transaction Report.resources/examples
+order: 1000

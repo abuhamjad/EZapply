@@ -1,0 +1,9 @@
+$kind: http-request
+description: Auth required. location_id query param is optional.
+url: "{{baseUrl}}/manage/get-company-contact-info?location_id=1"
+method: GET
+queryParams:
+  location_id: "1"
+settings: {}
+examples: ./.resources/Get Company Contact Info.resources/examples
+order: 1000

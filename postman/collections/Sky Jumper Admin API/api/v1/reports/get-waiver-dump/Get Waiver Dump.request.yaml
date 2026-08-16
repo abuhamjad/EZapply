@@ -1,0 +1,12 @@
+$kind: http-request
+description: Get Waiver Dump
+url: "{{baseUrl}}/api/v1/reports/get-waiver-dump"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+settings: {}
+examples: ./.resources/Get Waiver Dump.resources/examples
+order: 1000

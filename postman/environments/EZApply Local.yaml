@@ -1,0 +1,6 @@
+name: EZApply Local
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8000'
+    description: Base URL for the local EZApply FastAPI backend
+    enabled: true

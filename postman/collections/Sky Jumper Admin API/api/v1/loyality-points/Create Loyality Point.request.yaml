@@ -1,0 +1,18 @@
+$kind: http-request
+description: Create Loyality Point
+url: "{{baseUrl}}/api/v1/loyality-points"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "is_active": true,
+      "loyality_program": 1,
+      "play_point_spent": 100
+    }
+settings: {}
+examples: ./.resources/Create Loyality Point.resources/examples
+order: 2000

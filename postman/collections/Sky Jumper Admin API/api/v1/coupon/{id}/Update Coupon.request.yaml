@@ -1,0 +1,19 @@
+$kind: http-request
+description: Update Coupon
+url: "{{baseUrl}}/api/v1/coupon/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "code": "SUMMER10",
+      "discount": 10,
+      "is_active": true
+    }
+settings: {}
+examples: ./.resources/Update Coupon.resources/examples
+order: 1000

@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Inventory Status
+url: "{{baseUrl}}/api/v1/inventory-change-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Inventory Status.resources/examples
+order: 1000

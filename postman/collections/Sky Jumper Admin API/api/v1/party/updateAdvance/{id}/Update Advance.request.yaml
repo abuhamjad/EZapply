@@ -1,0 +1,17 @@
+$kind: http-request
+description: Update Advance
+url: "{{baseUrl}}/api/v1/party/updateAdvance/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "amount": 1500
+    }
+settings: {}
+examples: ./.resources/Update Advance.resources/examples
+order: 1000

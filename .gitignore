@@ -66,12 +66,13 @@ playwright-report/
 test-results/
 
 ##############################################################
-# SQLite / Local Databases
+# SQLite / Local Databases / Local Storage
 ##############################################################
 
 *.sqlite
 *.sqlite3
 *.db
+backend/storage/
 
 ##############################################################
 # Tauri / Rust

@@ -1,0 +1,15 @@
+$kind: http-request
+description: Generate Play Point Bill
+url: "{{baseUrl}}/partybooking/genrate-play-point-bill"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customer_order_id": 1
+    }
+settings: {}
+examples: ./.resources/Generate Play Point Bill.resources/examples
+order: 1000

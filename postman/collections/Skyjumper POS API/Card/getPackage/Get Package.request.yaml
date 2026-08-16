@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Package
+url: "{{baseUrl}}/Card/getPackage"
+method: GET
+settings: {}
+examples: ./.resources/Get Package.resources/examples
+order: 1000

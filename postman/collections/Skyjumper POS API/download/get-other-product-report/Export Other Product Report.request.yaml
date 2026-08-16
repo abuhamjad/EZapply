@@ -1,0 +1,15 @@
+$kind: http-request
+description: Export Other Product Report
+url: "{{baseUrl}}/download/get-other-product-report?start_date=&end_date=&location_id=&pageNumber=&limit="
+method: GET
+queryParams:
+  start_date: ""
+  end_date: ""
+  location_id: ""
+  pageNumber: ""
+  limit: ""
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Export Other Product Report.resources/examples
+order: 1000

@@ -1,0 +1,12 @@
+$kind: http-request
+description: Get Food Package
+url: "{{baseUrl}}/party/get-food-package?location_id=1&party_id=1"
+method: GET
+queryParams:
+  location_id: "1"
+  party_id: "1"
+auth:
+  type: noauth
+settings: {}
+examples: ./.resources/Get Food Package.resources/examples
+order: 1000

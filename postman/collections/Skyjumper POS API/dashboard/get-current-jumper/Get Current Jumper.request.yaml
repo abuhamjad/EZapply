@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get Current Jumper
+url: "{{baseUrl}}/dashboard/get-current-jumper"
+method: GET
+settings: {}
+examples: ./.resources/Get Current Jumper.resources/examples
+order: 1000

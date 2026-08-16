@@ -1,0 +1,12 @@
+$kind: http-request
+description: Fetch Party Detailed Report
+url: "{{baseUrl}}/api/v1/reports/fatch-party-detailed-report"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+settings: {}
+examples: ./.resources/Fetch Party Detailed Report.resources/examples
+order: 1000

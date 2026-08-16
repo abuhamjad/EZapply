@@ -1,0 +1,9 @@
+$kind: http-request
+description: Change Refund Reason Status
+url: "{{baseUrl}}/api/v1/refund-reason-status/:id"
+method: GET
+pathVariables:
+  id: "1"
+settings: {}
+examples: ./.resources/Change Refund Reason Status.resources/examples
+order: 1000

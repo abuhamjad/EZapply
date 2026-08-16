@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get Recipe Inventory
+url: "{{baseUrl}}/api/v1/get-sale-product-inventory/:sale_product_id"
+method: GET
+pathVariables:
+  sale_product_id: "1"
+settings: {}
+examples: ./.resources/Get Recipe Inventory.resources/examples
+order: 1000

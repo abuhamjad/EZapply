@@ -1,0 +1,16 @@
+# Use this workspace to collaborate
+workspace:
+  id: 0b1b74d0-bd40-4a4a-8792-13767228164e
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../postman/collections/SkyJumper Customer API: 2f86f2ec-ce08-4989-a0f9-a837ac2c7ece
+    ../postman/collections/Sky Jumper Admin API: 4705effd-108c-4d73-8ca5-a70531bfde33
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

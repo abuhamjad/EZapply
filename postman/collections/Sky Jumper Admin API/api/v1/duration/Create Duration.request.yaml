@@ -1,0 +1,17 @@
+$kind: http-request
+description: Create Duration
+url: "{{baseUrl}}/api/v1/duration"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1,
+      "duration": "30 Minutes",
+      "is_active": true
+    }
+settings: {}
+examples: ./.resources/Create Duration.resources/examples
+order: 2000

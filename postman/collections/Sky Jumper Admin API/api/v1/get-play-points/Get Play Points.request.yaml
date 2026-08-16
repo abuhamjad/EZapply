@@ -1,0 +1,15 @@
+$kind: http-request
+description: Get Play Points
+url: "{{baseUrl}}/api/v1/get-play-points"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "company_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Play Points.resources/examples
+order: 1000

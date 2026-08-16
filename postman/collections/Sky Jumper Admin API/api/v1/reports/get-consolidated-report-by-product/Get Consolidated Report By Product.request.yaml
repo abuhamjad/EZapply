@@ -1,0 +1,18 @@
+$kind: http-request
+description: Get Consolidated Report By Product
+url: "{{baseUrl}}/api/v1/reports/get-consolidated-report-by-product"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "end_date": "2026-07-09",
+      "limit": 10,
+      "page_number": 1,
+      "product_type_id": 1
+    }
+settings: {}
+examples: ./.resources/Get Consolidated Report By Product.resources/examples
+order: 1000
