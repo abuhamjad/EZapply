@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # Bot defaults
     DEFAULT_APPLICATION_LIMIT: int = 25
-    PLAYWRIGHT_HEADLESS: bool = True
+    PLAYWRIGHT_HEADLESS: bool = False  # Set to True in .env for headless/CI environments
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

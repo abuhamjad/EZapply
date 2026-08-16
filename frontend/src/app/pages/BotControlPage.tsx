@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { DollarSign, HelpCircle, MapPin, Pause, Play, Square } from "lucide-react";
-import type { BotConfig, BotState, BotStatus } from "../core/types";
+import { DollarSign, HelpCircle, MapPin, Pause, Play, Square, AlertCircle } from "lucide-react";
+import type { BotConfig, BotState, BotStatus, BotRunStatusResponse } from "../core/types";
 import { Card } from "../components/shared/components/cards";
 import { useAutomation } from "../core/hooks";
 
@@ -10,6 +10,7 @@ type BotControlPageProps = {
   onSetStatus: (status: BotStatus) => void;
   botState: BotState | null;
   updateConfig: (config: BotConfig) => Promise<void>;
+  activeRun: BotRunStatusResponse | null;
 };
 
 export function BotControlPage({
@@ -18,6 +19,7 @@ export function BotControlPage({
   onSetStatus,
   botState,
   updateConfig,
+  activeRun,
 }: BotControlPageProps) {
   const { statusColors, statusLabels } = useAutomation();
   const [platforms, setPlatforms] = useState({
@@ -31,6 +33,28 @@ export function BotControlPage({
   const [salary, setSalary] = useState("80000");
   const [delay, setDelay] = useState("45");
   const [saved, setSaved] = useState(false);
+  const [loginMessage, setLoginMessage] = useState<string | null>(null);
+
+  // Countdown arc computation — derived from the backend error_message.
+  // Extract the LAST number in the message which is always the remaining seconds.
+  // e.g. "Please sign in to linkedin (45 seconds remaining)"
+  const allNums = loginMessage?.match(/\d+/g) ?? [];
+  const secondsLeft = allNums.length > 0 ? parseInt(allNums[allNums.length - 1], 10) : 60;
+  const CIRCUMFERENCE = 2 * Math.PI * 45; // r=45 ≈ 282.7
+  const arcOffset = CIRCUMFERENCE * (1 - secondsLeft / 60);
+  const loginPlatformName = loginMessage?.includes("linkedin")
+    ? "LinkedIn"
+    : loginMessage?.includes("indeed")
+    ? "Indeed"
+    : "the platform";
+
+  useEffect(() => {
+    if (botStatus === "login_buffer" && activeRun?.error_message) {
+      setLoginMessage(activeRun.error_message);
+    } else {
+      setLoginMessage(null);
+    }
+  }, [botStatus, activeRun?.error_message]);
 
   useEffect(() => {
     if (!botState) return;
@@ -67,43 +91,94 @@ export function BotControlPage({
         <h3 className="text-sm font-semibold text-foreground mb-5">
           Bot Status
         </h3>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => void onStart()}
-            disabled={botStatus === "running"}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              botStatus === "running"
-                ? "bg-emerald-500 text-white shadow-sm cursor-default"
-                : "bg-secondary text-foreground hover:bg-emerald-50 hover:text-emerald-700"
-            }`}
-          >
-            <Play className="w-4 h-4" /> {botStatus === "running" ? "Running..." : "Start"}
-          </button>
-          <button
-            onClick={() => onSetStatus("paused")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              botStatus === "paused"
-                ? "bg-amber-400 text-white shadow-sm"
-                : "bg-secondary text-foreground hover:bg-amber-50 hover:text-amber-700"
-            }`}
-          >
-            <Pause className="w-4 h-4" /> Pause
-          </button>
-          <button
-            onClick={() => onSetStatus("stopped")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              botStatus === "stopped"
-                ? "bg-foreground text-background shadow-sm"
-                : "bg-secondary text-foreground hover:bg-secondary"
-            }`}
-          >
-            <Square className="w-4 h-4" /> Stop
-          </button>
-        </div>
-        <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className={`w-2 h-2 rounded-full ${statusColors[botStatus] || "bg-zinc-400"}`} />
-          Currently {(statusLabels[botStatus] || botStatus || "unknown").toLowerCase()}
-        </div>
+        
+        {botStatus === "login_buffer" ? (
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="relative w-24 h-24 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                {/* Track */}
+                <circle
+                  cx="50" cy="50" r="45"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  className="text-zinc-200"
+                />
+                {/* Countdown arc — depletes as time runs out */}
+                <circle
+                  cx="50" cy="50" r="45"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={CIRCUMFERENCE}
+                  strokeDashoffset={arcOffset}
+                  className="text-blue-500 transition-all duration-1000 ease-linear"
+                />
+              </svg>
+              <div className="absolute text-center">
+                <div className="text-2xl font-bold text-foreground tabular-nums">
+                  {secondsLeft}
+                </div>
+                <div className="text-[10px] text-muted-foreground">sec</div>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground mb-1">
+                Waiting for {loginPlatformName} login
+              </p>
+              <p className="text-xs text-muted-foreground max-w-sm">
+                A browser window has opened. Please sign in and the bot will start automatically.
+              </p>
+            </div>
+            <button
+              onClick={() => onSetStatus("stopped")}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 transition-all"
+            >
+              <Square className="w-4 h-4" /> Cancel
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => void onStart()}
+                disabled={botStatus === "running"}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  botStatus === "running"
+                    ? "bg-emerald-500 text-white shadow-sm cursor-default"
+                    : "bg-secondary text-foreground hover:bg-emerald-50 hover:text-emerald-700"
+                }`}
+              >
+                <Play className="w-4 h-4" /> {botStatus === "running" ? "Running..." : "Start"}
+              </button>
+              <button
+                onClick={() => onSetStatus("paused")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  botStatus === "paused"
+                    ? "bg-amber-400 text-white shadow-sm"
+                    : "bg-secondary text-foreground hover:bg-amber-50 hover:text-amber-700"
+                }`}
+              >
+                <Pause className="w-4 h-4" /> Pause
+              </button>
+              <button
+                onClick={() => onSetStatus("stopped")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  botStatus === "stopped"
+                    ? "bg-foreground text-background shadow-sm"
+                    : "bg-secondary text-foreground hover:bg-secondary"
+                }`}
+              >
+                <Square className="w-4 h-4" /> Stop
+              </button>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className={`w-2 h-2 rounded-full ${statusColors[botStatus] || "bg-zinc-400"}`} />
+              Currently {(statusLabels[botStatus] || botStatus || "unknown").toLowerCase()}
+            </div>
+          </>
+        )}
       </Card>
 
       <Card>

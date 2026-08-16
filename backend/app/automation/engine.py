@@ -118,12 +118,66 @@ async def run_automation(bot_run_id: str) -> None:
                         logger.warning("No adapter for platform: %s", platform_name)
                         continue
 
-                    # Session/Login handling
+                    # Always get a page (with or without saved session cookies).
                     page = await session_manager.get_authenticated_page(browser, platform_name)
+
+                    # Always run ensure_logged_in so we can validate the session.
+                    # If the saved session is still valid, ensure_logged_in resolves
+                    # in ~2 seconds (it navigates to the login page and detects the
+                    # logged-in nav bar immediately). If it is expired or missing the
+                    # user sees the login form and has 60 s to sign in.
                     if hasattr(adapter, "ensure_logged_in"):
-                        logger.info("[run_automation] ensuring login for platform=%s run_id=%s", platform_name, bot_run_id)
-                        await adapter.ensure_logged_in(page)
-                        await session_manager.save_session(page, platform_name)
+                        logger.info(
+                            "[run_automation] starting login buffer for platform=%s run_id=%s",
+                            platform_name,
+                            bot_run_id,
+                        )
+
+                        # Signal UI: show the countdown panel.
+                        await repo.update(
+                            run,
+                            status=BotRunStatus.LOGIN_BUFFER.value,
+                            error_message=f"Please sign in to {platform_name} (60 seconds remaining)",
+                        )
+
+                        # Capture platform_name in closure explicitly to avoid
+                        # the classic "late-binding" bug in async loops.
+                        _platform = platform_name
+
+                        async def update_login_timer(seconds_remaining: int, _p: str = _platform) -> None:
+                            try:
+                                msg = f"Please sign in to {_p} ({seconds_remaining} seconds remaining)"
+                                await repo.update(run, error_message=msg)
+                            except Exception as _e:
+                                logger.debug("Failed to update login timer: %s", _e)
+
+                        login_success = await adapter.ensure_logged_in(
+                            page, timeout_seconds=60, on_timeout_callback=update_login_timer
+                        )
+
+                        if login_success:
+                            logger.info(
+                                "[run_automation] user logged in for platform=%s run_id=%s",
+                                platform_name,
+                                bot_run_id,
+                            )
+                            # Persist the fresh/refreshed session.
+                            await session_manager.save_session(page, platform_name)
+                            # Clear the buffer and move to RUNNING.
+                            await repo.update(run, status=BotRunStatus.RUNNING.value, error_message=None)
+                        else:
+                            logger.warning(
+                                "[run_automation] login timeout for platform=%s run_id=%s",
+                                platform_name,
+                                bot_run_id,
+                            )
+                            # Save whatever partial session state we have and try to continue.
+                            await session_manager.save_session(page, platform_name)
+                            await repo.update(
+                                run,
+                                status=BotRunStatus.RUNNING.value,
+                                error_message="Login timed out — attempting to continue with saved session",
+                            )
 
                     location = bot_config.location if bot_config else None
                     job_type = bot_config.job_type if bot_config else None

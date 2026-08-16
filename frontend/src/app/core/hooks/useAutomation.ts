@@ -71,6 +71,9 @@ export function useBotState() {
       }
     };
 
+    // Poll faster during login_buffer so the countdown feels smooth.
+    const pollMs = activeRun.status === "LOGIN_BUFFER" ? 1000 : 4000;
+
     const pollRunStatus = async () => {
       try {
         const s = await AutomationService.getRunStatus(activeRun.id);
@@ -93,13 +96,13 @@ export function useBotState() {
     void pollRunStatus();
     intervalId = window.setInterval(() => {
       void pollRunStatus();
-    }, 4000);
+    }, pollMs);
 
     return () => {
       cancelled = true;
       stopPolling();
     };
-  }, [activeRun?.id]);
+  }, [activeRun?.id, activeRun?.status]);
 
   const setStatus = useCallback(async (status: BotStatus) => {
     try {
