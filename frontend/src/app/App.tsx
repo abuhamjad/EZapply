@@ -9,7 +9,7 @@ import type { View } from "./core/types";
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>("dashboard");
-  const { botState, botStatus, startBot, setStatus, updateConfig } =
+  const { botState, botStatus, startBot, setStatus, updateConfig, activeRun } =
     useBotState();
 
   return (
@@ -26,6 +26,7 @@ export default function App() {
           onSetStatus={setStatus}
           botState={botState}
           updateConfig={updateConfig}
+          activeRun={activeRun}
         />
       )}
       {activeView === "saved-info" && <SavedInfoPage />}

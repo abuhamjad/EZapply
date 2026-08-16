@@ -9,6 +9,7 @@ import type {
 
 const STATUS_COLORS: Record<BotStatus, string> = {
   running: "bg-emerald-500",
+  login_buffer: "bg-blue-500",
   paused: "bg-amber-400",
   stopped: "bg-zinc-400",
   failed: "bg-rose-500",
@@ -17,6 +18,7 @@ const STATUS_COLORS: Record<BotStatus, string> = {
 
 const STATUS_LABELS: Record<BotStatus, string> = {
   running: "Running",
+  login_buffer: "Waiting for Login",
   paused: "Paused",
   stopped: "Stopped",
   failed: "Failed",

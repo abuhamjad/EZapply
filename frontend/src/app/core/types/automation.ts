@@ -56,6 +56,8 @@ export function mapRunStatusToBotStatus(status: BotRunStatus): BotStatus {
     case "STARTED":
     case "RUNNING":
       return "running";
+    case "LOGIN_BUFFER":
+      return "login_buffer";
     case "PAUSED_NEEDS_INPUT":
       return "paused";
     case "FAILED":

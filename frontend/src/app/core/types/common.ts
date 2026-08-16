@@ -1,8 +1,9 @@
 export type View = "dashboard" | "bot-control" | "saved-info" | "analytics";
 
-export type BotStatus = "running" | "paused" | "stopped" | "failed" | "completed";
+export type BotStatus = "running" | "login_buffer" | "paused" | "stopped" | "failed" | "completed";
 export type BotRunStatus =
   | "STARTED"
+  | "LOGIN_BUFFER"
   | "RUNNING"
   | "PAUSED_NEEDS_INPUT"
   | "COMPLETED"

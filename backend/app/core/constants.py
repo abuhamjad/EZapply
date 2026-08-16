@@ -3,6 +3,7 @@ from enum import Enum
 
 class BotRunStatus(str, Enum):
     STARTED = "STARTED"
+    LOGIN_BUFFER = "LOGIN_BUFFER"  # Waiting for user to log in (1 min timeout)
     RUNNING = "RUNNING"
     PAUSED_NEEDS_INPUT = "PAUSED_NEEDS_INPUT"
     COMPLETED = "COMPLETED"
