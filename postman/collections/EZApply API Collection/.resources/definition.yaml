@@ -1,0 +1,4 @@
+$kind: collection
+description: Combined API collection for testing all EZApply backend endpoints.
+variables:
+  baseUrl: http://127.0.0.1:8000/api

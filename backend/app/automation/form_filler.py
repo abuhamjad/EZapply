@@ -4,7 +4,6 @@ adapters are responsible for opening the application modal/page; FormFiller
 takes it from there: read fields -> match against SavedInfo/Resume/learned
 answers -> fill -> submit, pausing on anything unmapped.
 """
-import string
 from typing import Literal
 
 from playwright.async_api import Page
@@ -80,30 +79,77 @@ class FormFiller:
     @staticmethod
     def _match_saved_info(field: dict, saved_info) -> str | None:
         label = field["label"].lower()
-        # Remove punctuation, strip whitespace, normalize spaces
-        label = label.translate(str.maketrans('', '', string.punctuation)).strip()
+        # Normalize: remove punctuation, collapse whitespace
+        import string as _string
+        label = label.translate(str.maketrans('', '', _string.punctuation)).strip()
         label = " ".join(label.split())
 
-        # Substring/keyword containment matching for field labels
+        # Name variants
         if "first name" in label:
-            return saved_info.full_name.split()[0] if saved_info.full_name else None
-        if "last name" in label:
-            return saved_info.full_name.split()[-1] if saved_info.full_name else None
-        if "name" in label:
+            parts = (saved_info.full_name or "").split()
+            return parts[0] if parts else None
+        if "last name" in label or "surname" in label or "family name" in label:
+            parts = (saved_info.full_name or "").split()
+            return parts[-1] if len(parts) > 1 else (parts[0] if parts else None)
+        if "full name" in label or (
+            "name" in label
+            and "first" not in label
+            and "last" not in label
+            and "company" not in label
+            and "school" not in label
+            and "university" not in label
+        ):
             return saved_info.full_name
+
+        # Contact
         if "email" in label:
             return saved_info.email
+
+        # Phone — strip to digits only for "mobile phone number" fields
         if "phone" in label or "mobile" in label:
-            return saved_info.phone
-        if "location" in label or "city" in label:
+            phone = saved_info.phone or ""
+            if field.get("type") == "text":
+                # LinkedIn mobile number field expects digits only (no country code)
+                digits_only = "".join(c for c in phone if c.isdigit())
+                # Remove leading 91 if it's a 12-digit Indian number
+                if len(digits_only) == 12 and digits_only.startswith("91"):
+                    digits_only = digits_only[2:]
+                return digits_only if digits_only else phone
+            return phone
+
+        # Location
+        if any(kw in label for kw in ["location", "city", "address", "pincode", "zip", "state"]):
             return saved_info.location
+
+        # Professional links
+        if "linkedin" in label and "url" in label:
+            return saved_info.linkedin_url
         if "linkedin" in label:
             return saved_info.linkedin_url
-        if "portfolio" in label or "website" in label:
+        if "portfolio" in label or "website" in label or "github" in label:
             return saved_info.portfolio_url
-        if "salary" in label:
+
+        # Compensation
+        if "salary" in label or "compensation" in label or "ctc" in label or "package" in label:
             return saved_info.salary_expectation
-        if "work authorization" in label or "sponsorship" in label:
+
+        # Work authorization / visa
+        if any(kw in label for kw in ["work authorization", "sponsorship", "visa", "authorized", "eligible"]):
             return saved_info.work_authorization
 
+        # Years of experience — derive from profile if possible, default safe answer
+        if "years of experience" in label or "years experience" in label:
+            return "1"  # conservative default; LearningService can override
+
+        # Cover letter / summary fields
+        if "cover letter" in label or "summary" in label or "about yourself" in label or "tell us about" in label:
+            name = (saved_info.full_name or "Candidate").split()[0]
+            titles = saved_info.target_titles or []
+            title_str = titles[0] if titles else "Software Developer"
+            return (
+                f"Hi, I am {name}, a passionate {title_str} looking for exciting opportunities. "
+                f"I am eager to contribute my skills and grow with your team."
+            )
+
         return None
+

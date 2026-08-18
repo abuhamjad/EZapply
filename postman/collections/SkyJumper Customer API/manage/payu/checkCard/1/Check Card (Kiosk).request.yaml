@@ -1,7 +1,0 @@
-$kind: http-request
-description: "Auth required. cardNumber path param. Note: builds SQL via string concatenation server-side."
-url: "{{baseUrl}}/manage/payu/checkCard/1"
-method: GET
-settings: {}
-examples: ./.resources/Check Card (Kiosk).resources/examples
-order: 1000

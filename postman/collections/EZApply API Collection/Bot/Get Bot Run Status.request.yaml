@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/bot/status/run_123"
+method: GET
+order: 5000

@@ -19,8 +19,8 @@ class BotConfig(Base):
     glassdoor: Mapped[bool] = mapped_column(Boolean, default=False)
     dice: Mapped[bool] = mapped_column(Boolean, default=False)
     job_type: Mapped[str] = mapped_column(String(20), default="full-time")
-    location: Mapped[str] = mapped_column(String(200), default="Remote")
-    min_salary: Mapped[int] = mapped_column(Integer, default=80000)
+    location: Mapped[str] = mapped_column(String(200), default="India")
+    min_salary: Mapped[int] = mapped_column(Integer, default=600000)
     apply_delay: Mapped[int] = mapped_column(Integer, default=45)
 
 

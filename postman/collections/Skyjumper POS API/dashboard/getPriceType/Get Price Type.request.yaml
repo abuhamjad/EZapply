@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Price Type
-url: "{{baseUrl}}/dashboard/getPriceType"
-method: GET
-settings: {}
-examples: ./.resources/Get Price Type.resources/examples
-order: 1000

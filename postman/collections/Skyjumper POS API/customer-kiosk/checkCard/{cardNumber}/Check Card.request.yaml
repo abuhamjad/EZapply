@@ -1,9 +1,0 @@
-$kind: http-request
-description: Check Card
-url: "{{baseUrl}}/customer-kiosk/checkCard/:cardNumber"
-method: GET
-pathVariables:
-  cardNumber: ""
-settings: {}
-examples: ./.resources/Check Card.resources/examples
-order: 1000

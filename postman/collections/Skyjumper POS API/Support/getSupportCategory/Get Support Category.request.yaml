@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Support Category
-url: "{{baseUrl}}/Support/getSupportCategory"
-method: GET
-settings: {}
-examples: ./.resources/Get Support Category.resources/examples
-order: 1000

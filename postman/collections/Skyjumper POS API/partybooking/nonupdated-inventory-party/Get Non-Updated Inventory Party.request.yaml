@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Non-Updated Inventory Party
-url: "{{baseUrl}}/partybooking/nonupdated-inventory-party"
-method: GET
-settings: {}
-examples: ./.resources/Get Non-Updated Inventory Party.resources/examples
-order: 1000

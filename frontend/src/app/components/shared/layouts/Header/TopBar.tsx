@@ -1,20 +1,14 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { BotStatus, View } from "../../../../core/types";
+import { AutomationService } from "../../../../core/services";
 
-const STATUS_COLORS: Record<BotStatus, string> = {
-  running: "bg-emerald-500",
-  paused: "bg-amber-400",
-  stopped: "bg-zinc-400",
-  failed: "bg-rose-500",
-  completed: "bg-sky-500",
-};
-
-const STATUS_LABELS: Record<BotStatus, string> = {
-  running: "Running",
-  paused: "Paused",
-  stopped: "Stopped",
-  failed: "Failed",
-  completed: "Completed",
+const STATUS_BADGE_STYLES: Record<BotStatus, string> = {
+  running: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+  login_buffer: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
+  paused: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+  stopped: "bg-secondary text-muted-foreground",
+  failed: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+  completed: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
 };
 
 const VIEW_TITLES: Record<View, string> = {
@@ -27,39 +21,67 @@ const VIEW_TITLES: Record<View, string> = {
 type TopBarProps = {
   activeView: View;
   botStatus: BotStatus;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  onToggleMobile?: () => void;
 };
 
-export function TopBar({ activeView, botStatus }: TopBarProps) {
+export function TopBar({
+  activeView,
+  botStatus,
+  isCollapsed = false,
+  onToggleCollapse,
+  onToggleMobile,
+}: TopBarProps) {
+  const statusColor = AutomationService.getStatusColor(botStatus) || "bg-zinc-400";
+  const statusLabel = AutomationService.getStatusLabel(botStatus) || "Stopped";
+  const badgeStyle = STATUS_BADGE_STYLES[botStatus] || STATUS_BADGE_STYLES.stopped;
+
   return (
-    <header className="h-14 shrink-0 border-b border-border bg-card flex items-center justify-between px-6">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">ApplyBot</span>
-        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="font-medium text-foreground">
-          {VIEW_TITLES[activeView]}
-        </span>
-      </div>
-      <div className="flex items-center gap-3">
-        <div
-          className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-            botStatus === "running"
-              ? "bg-emerald-100 text-emerald-700"
-              : botStatus === "paused"
-                ? "bg-amber-100 text-amber-700"
-                : botStatus === "failed"
-                  ? "bg-rose-100 text-rose-700"
-                  : botStatus === "completed"
-                    ? "bg-sky-100 text-sky-700"
-                : "bg-secondary text-muted-foreground"
-          }`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${STATUS_COLORS[botStatus]}`}
-          />
-          {STATUS_LABELS[botStatus]}
+    <header className="h-14 shrink-0 border-b border-border bg-card flex items-center justify-between px-4 sm:px-6 gap-3">
+      <div className="flex items-center gap-2.5 min-w-0">
+        {/* Mobile Hamburger Menu Toggle */}
+        {onToggleMobile && (
+          <button
+            onClick={onToggleMobile}
+            title="Toggle Navigation Menu"
+            className="flex md:hidden items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors shrink-0"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Desktop Sidebar Toggle when collapsed */}
+        {isCollapsed && onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            title="Expand sidebar"
+            className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors shrink-0"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Breadcrumb navigation */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm truncate">
+          <span className="text-muted-foreground hidden sm:inline">EZApply</span>
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground hidden sm:inline shrink-0" />
+          <span className="font-medium text-foreground truncate">
+            {VIEW_TITLES[activeView]}
+          </span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold text-foreground">
-          AC
+      </div>
+
+      {/* Right Action / Status Area */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        <div
+          className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${badgeStyle}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusColor}`} />
+          <span className="truncate">{statusLabel}</span>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold text-foreground shrink-0 border border-border">
+          AK
         </div>
       </div>
     </header>

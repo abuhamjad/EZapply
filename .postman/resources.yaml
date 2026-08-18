@@ -6,8 +6,7 @@ workspace:
 
 cloudResources:
   collections:
-    ../postman/collections/SkyJumper Customer API: 2f86f2ec-ce08-4989-a0f9-a837ac2c7ece
-    ../postman/collections/Sky Jumper Admin API: 4705effd-108c-4d73-8ca5-a70531bfde33
+    ../postman/collections/EZApply API Collection: 2428647f-b78c-4e6b-bda2-4e884a05b8d7
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:

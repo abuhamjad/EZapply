@@ -71,8 +71,13 @@ export function useBotState() {
       }
     };
 
-    // Poll faster during login_buffer so the countdown feels smooth.
-    const pollMs = activeRun.status === "LOGIN_BUFFER" ? 1000 : 4000;
+    // If terminal status, don't poll
+    if (isTerminalRunStatus(activeRun.status)) {
+      return;
+    }
+
+    // Poll faster during login_buffer so countdown is smooth
+    const pollMs = activeRun.status === "LOGIN_BUFFER" ? 1000 : 3000;
 
     const pollRunStatus = async () => {
       try {
@@ -85,6 +90,8 @@ export function useBotState() {
         if (isTerminalRunStatus(s.status)) {
           stopPolling();
           window.localStorage.removeItem(ACTIVE_RUN_STORAGE_KEY);
+          const latestState = await AutomationService.getBotState();
+          setBotState(latestState);
         }
       } catch (e) {
         if (!cancelled) {
@@ -93,7 +100,6 @@ export function useBotState() {
       }
     };
 
-    void pollRunStatus();
     intervalId = window.setInterval(() => {
       void pollRunStatus();
     }, pollMs);
@@ -104,25 +110,65 @@ export function useBotState() {
     };
   }, [activeRun?.id, activeRun?.status]);
 
-  const setStatus = useCallback(async (status: BotStatus) => {
+  const pauseBot = useCallback(async () => {
     try {
-      const s = await AutomationService.setStatus(status);
-      setBotState(s);
+      if (activeRun?.id) {
+        const updatedRun = await AutomationService.pauseBot(activeRun.id);
+        if ("id" in updatedRun) {
+          setActiveRun(updatedRun);
+        }
+      } else {
+        await AutomationService.pauseBot();
+      }
+      const updatedState = await AutomationService.getBotState();
+      setBotState(updatedState);
       setError(null);
     } catch (e) {
       setError((e as Error).message);
     }
-  }, []);
+  }, [activeRun?.id]);
 
-  const startBot = useCallback(async () => {
+  const stopBot = useCallback(async () => {
     try {
-      // Use current config to determine which platforms and keywords to pass
-      const enabledPlatforms: string[] = [];
-      if (botState?.linkedin) enabledPlatforms.push("linkedin");
-      if (botState?.indeed) enabledPlatforms.push("indeed");
-      if (botState?.glassdoor) enabledPlatforms.push("glassdoor");
-      if (botState?.dice) enabledPlatforms.push("dice");
-      // Default to LinkedIn if none selected
+      if (activeRun?.id) {
+        const updatedRun = await AutomationService.stopBot(activeRun.id);
+        if ("id" in updatedRun) {
+          setActiveRun(updatedRun);
+        }
+      } else {
+        await AutomationService.stopBot();
+      }
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(ACTIVE_RUN_STORAGE_KEY);
+      }
+      const updatedState = await AutomationService.getBotState();
+      setBotState(updatedState);
+      setError(null);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }, [activeRun?.id]);
+
+  const startBot = useCallback(async (overrides?: { platforms?: string[]; keywords?: string[] }) => {
+    try {
+      // If run exists and is paused, resume it
+      if (activeRun?.id && activeRun.status === "PAUSED_NEEDS_INPUT") {
+        const resumedRun = await AutomationService.resumeBot(activeRun.id);
+        setActiveRun(resumedRun);
+        const updatedState = await AutomationService.getBotState();
+        setBotState(updatedState);
+        setError(null);
+        return { run_id: resumedRun.id, status: resumedRun.status };
+      }
+
+      // Determine platforms: prefer explicit overrides from UI
+      let enabledPlatforms: string[] = overrides?.platforms ?? [];
+      if (enabledPlatforms.length === 0) {
+        if (botState?.linkedin) enabledPlatforms.push("linkedin");
+        if (botState?.indeed) enabledPlatforms.push("indeed");
+        if (botState?.glassdoor) enabledPlatforms.push("glassdoor");
+        if (botState?.dice) enabledPlatforms.push("dice");
+      }
       if (enabledPlatforms.length === 0) enabledPlatforms.push("linkedin");
 
       const savedInfo = await SavedInfoService.getSavedInfo();
@@ -141,17 +187,30 @@ export function useBotState() {
         keywords: keywords,
         application_limit: 25,
       });
-      setActiveRun(result);
+      const initialRun = await AutomationService.getRunStatus(result.run_id);
+      setActiveRun(initialRun);
       if (typeof window !== "undefined") {
         window.localStorage.setItem(ACTIVE_RUN_STORAGE_KEY, result.run_id);
       }
+      const updatedState = await AutomationService.getBotState();
+      setBotState(updatedState);
       setError(null);
       return result;
     } catch (e) {
       setError((e as Error).message);
       return null;
     }
-  }, [botState]);
+  }, [activeRun?.id, activeRun?.status, botState]);
+
+  const setStatus = useCallback(async (status: BotStatus) => {
+    if (status === "paused") {
+      await pauseBot();
+    } else if (status === "stopped") {
+      await stopBot();
+    } else if (status === "running") {
+      await startBot();
+    }
+  }, [pauseBot, stopBot, startBot]);
 
   const updateConfig = useCallback(async (config: BotConfig) => {
     try {
@@ -163,7 +222,15 @@ export function useBotState() {
     }
   }, []);
 
-  const botStatus = activeRun ? mapRunStatusToBotStatus(activeRun.status) : botState?.status ?? "stopped";
+  const botStatus: BotStatus = (() => {
+    if (activeRun) {
+      const derived = mapRunStatusToBotStatus(activeRun.status);
+      if (derived !== "stopped" && derived !== "failed" && derived !== "completed") {
+        return derived;
+      }
+    }
+    return botState?.status ?? "stopped";
+  })();
 
   return { botState, botStatus, activeRun, error, startBot, setStatus, updateConfig };
 }

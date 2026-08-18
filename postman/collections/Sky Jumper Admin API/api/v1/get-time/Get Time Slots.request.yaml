@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Time Slots
-url: "{{baseUrl}}/api/v1/get-time"
-method: GET
-settings: {}
-examples: ./.resources/Get Time Slots.resources/examples
-order: 1000

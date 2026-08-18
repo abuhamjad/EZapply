@@ -1,9 +1,0 @@
-$kind: http-request
-description: Change Employee Status
-url: "{{baseUrl}}/api/v1/change-employee-status/:id"
-method: GET
-pathVariables:
-  id: "1"
-settings: {}
-examples: ./.resources/Change Employee Status.resources/examples
-order: 1000

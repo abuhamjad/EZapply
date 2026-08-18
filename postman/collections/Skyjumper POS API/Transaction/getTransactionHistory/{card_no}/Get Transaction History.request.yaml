@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Transaction History
-url: "{{baseUrl}}/Transaction/getTransactionHistory/:card_no"
-method: GET
-pathVariables:
-  card_no: ""
-settings: {}
-examples: ./.resources/Get Transaction History.resources/examples
-order: 1000

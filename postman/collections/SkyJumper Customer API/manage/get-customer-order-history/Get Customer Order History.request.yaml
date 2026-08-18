@@ -1,7 +1,0 @@
-$kind: http-request
-description: Auth required. Returns the logged-in customer's order history.
-url: "{{baseUrl}}/manage/get-customer-order-history"
-method: GET
-settings: {}
-examples: ./.resources/Get Customer Order History.resources/examples
-order: 1000

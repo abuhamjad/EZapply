@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/bot/stop/run_123"
+method: POST
+order: 6000

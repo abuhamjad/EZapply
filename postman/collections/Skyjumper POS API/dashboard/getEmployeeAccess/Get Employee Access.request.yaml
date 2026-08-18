@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Employee Access
-url: "{{baseUrl}}/dashboard/getEmployeeAccess"
-method: GET
-settings: {}
-examples: ./.resources/Get Employee Access.resources/examples
-order: 1000

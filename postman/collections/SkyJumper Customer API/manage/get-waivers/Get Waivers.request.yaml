@@ -1,7 +1,0 @@
-$kind: http-request
-description: Auth required. Returns waivers for the logged-in customer.
-url: "{{baseUrl}}/manage/get-waivers"
-method: GET
-settings: {}
-examples: ./.resources/Get Waivers.resources/examples
-order: 1000

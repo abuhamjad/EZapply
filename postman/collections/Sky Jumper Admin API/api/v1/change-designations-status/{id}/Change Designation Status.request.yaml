@@ -1,9 +1,0 @@
-$kind: http-request
-description: Change Designation Status
-url: "{{baseUrl}}/api/v1/change-designations-status/:id"
-method: GET
-pathVariables:
-  id: "1"
-settings: {}
-examples: ./.resources/Change Designation Status.resources/examples
-order: 1000

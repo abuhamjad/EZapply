@@ -66,8 +66,25 @@ class ResumeService:
         """Return the default resume record, or None if none is set."""
         return await self.repo.get_default()
 
-    async def list_resumes(self):
-        return await self.repo.list_all()
+    async def list_resumes(self) -> list:
+        from app.schemas.resume import ResumeResponse, ParsedResumeSummary
+        rows = await self.repo.list_all()
+        result = []
+        for r in rows:
+            result.append(ResumeResponse(
+                id=r.id,
+                original_filename=r.original_filename,
+                file_type=r.file_type,
+                is_default=r.is_default,
+                created_at=r.created_at,
+                parsed=ParsedResumeSummary(
+                    skills=json.loads(r.parsed_skills_json or "[]"),
+                    experience=json.loads(r.parsed_experience_json or "[]"),
+                    education=json.loads(r.parsed_education_json or "[]"),
+                ),
+            ))
+        return result
 
     async def set_default(self, resume_id: str) -> None:
         await self.repo.set_default(resume_id)
+

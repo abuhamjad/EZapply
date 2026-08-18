@@ -1,9 +1,0 @@
-$kind: http-request
-description: Generate Party Bill
-url: "{{baseUrl}}/partybooking/genrate-party-bill/:party_id"
-method: POST
-pathVariables:
-  party_id: ""
-settings: {}
-examples: ./.resources/Generate Party Bill.resources/examples
-order: 1000

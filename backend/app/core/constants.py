@@ -20,3 +20,5 @@ class ApplicationStatus(str, Enum):
 class Platform(str, Enum):
     LINKEDIN = "linkedin"
     INDEED = "indeed"
+    GLASSDOOR = "glassdoor"
+    DICE = "dice"

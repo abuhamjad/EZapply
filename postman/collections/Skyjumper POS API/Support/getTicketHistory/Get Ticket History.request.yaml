@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Ticket History
-url: "{{baseUrl}}/Support/getTicketHistory"
-method: GET
-settings: {}
-examples: ./.resources/Get Ticket History.resources/examples
-order: 1000

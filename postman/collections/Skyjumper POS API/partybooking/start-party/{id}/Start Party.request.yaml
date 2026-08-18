@@ -1,9 +1,0 @@
-$kind: http-request
-description: Start Party
-url: "{{baseUrl}}/partybooking/start-party/:id"
-method: GET
-pathVariables:
-  id: ""
-settings: {}
-examples: ./.resources/Start Party.resources/examples
-order: 1000

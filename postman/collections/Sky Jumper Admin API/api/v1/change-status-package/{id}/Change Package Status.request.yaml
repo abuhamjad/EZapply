@@ -1,9 +1,0 @@
-$kind: http-request
-description: Change Package Status
-url: "{{baseUrl}}/api/v1/change-status-package/:id"
-method: GET
-pathVariables:
-  id: "1"
-settings: {}
-examples: ./.resources/Change Package Status.resources/examples
-order: 1000

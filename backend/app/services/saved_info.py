@@ -1,6 +1,9 @@
 import json
+import re
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.bot import BotConfig
 from app.models.saved_info import SavedInfo
 from app.repositories.saved_info_repository import SavedInfoRepository
 from app.schemas.saved_info import (
@@ -11,13 +14,45 @@ from app.schemas.saved_info import (
 )
 
 
+def parse_annual_salary(val: str | int | None) -> int:
+    """Parse salary input into an annual integer in INR."""
+    if val is None:
+        return 0
+    if isinstance(val, (int, float)):
+        if 0 < val <= 100:
+            return int(val * 100000)
+        return int(val)
+
+    text = str(val).strip().lower()
+    if not text:
+        return 0
+
+    # Check for LPA / Lakhs format: e.g. "6.5 LPA", "12 Lakh"
+    lpa_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:lpa|lakh|lac)", text)
+    if lpa_match:
+        return int(float(lpa_match.group(1)) * 100000)
+
+    # Extract all digits
+    digits = re.sub(r"[^\d.]", "", text)
+    if not digits:
+        return 0
+    try:
+        num = float(digits)
+        if 0 < num <= 100:
+            return int(num * 100000)
+        return int(num)
+    except ValueError:
+        return 0
+
+
 class SavedInfoService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.repo = SavedInfoRepository(db)
 
     async def get(self) -> SavedInfoResponse:
         row = await self.repo.get_or_create()
-        
+
         saved_kws_json = json.loads(row.saved_keywords_json) if row.saved_keywords_json else []
         tmpl_json = json.loads(row.cover_letter_templates_json) if row.cover_letter_templates_json else []
 
@@ -63,6 +98,17 @@ class SavedInfoService:
         }
         fields = {k: v for k, v in fields.items() if v is not None}
         await self.repo.update(row, **fields)
+
+        # Synchronize salary expectation with BotConfig.min_salary (annual INR)
+        if payload.salary_expectation is not None:
+            sal_int = parse_annual_salary(payload.salary_expectation)
+            if sal_int > 0:
+                cfg_res = await self.db.execute(select(BotConfig).where(BotConfig.id == "default"))
+                cfg = cfg_res.scalar_one_or_none()
+                if cfg:
+                    cfg.min_salary = sal_int
+                    await self.db.commit()
+
         return await self.get()
 
     async def _get_keywords_list(self) -> list[dict]:

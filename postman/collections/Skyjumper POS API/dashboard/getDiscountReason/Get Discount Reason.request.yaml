@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Discount Reason
-url: "{{baseUrl}}/dashboard/getDiscountReason"
-method: GET
-settings: {}
-examples: ./.resources/Get Discount Reason.resources/examples
-order: 1000

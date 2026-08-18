@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Waiver
-url: "{{baseUrl}}/Waiver/get-waiver"
-method: GET
-auth:
-  type: noauth
-settings: {}
-examples: ./.resources/Get Waiver.resources/examples
-order: 1000

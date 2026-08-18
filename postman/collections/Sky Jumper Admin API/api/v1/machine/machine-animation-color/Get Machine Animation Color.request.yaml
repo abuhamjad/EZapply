@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Machine Animation Color
-url: "{{baseUrl}}/api/v1/machine/machine-animation-color"
-method: GET
-settings: {}
-examples: ./.resources/Get Machine Animation Color.resources/examples
-order: 1000

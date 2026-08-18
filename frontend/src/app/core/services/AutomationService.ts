@@ -54,6 +54,24 @@ export class AutomationService {
     return (await apiPost<BotStartResponse>("/bot/start", config))!;
   }
 
+  static async pauseBot(runId?: string): Promise<BotRunStatusResponse | BotState> {
+    if (runId) {
+      return (await apiPost<BotRunStatusResponse>(`/bot/pause/${runId}`))!;
+    }
+    return (await apiSend<BotState>("PUT", "/bot/status", { status: "paused" }))!;
+  }
+
+  static async resumeBot(runId: string): Promise<BotRunStatusResponse> {
+    return (await apiPost<BotRunStatusResponse>(`/bot/resume/${runId}`))!;
+  }
+
+  static async stopBot(runId?: string): Promise<BotRunStatusResponse | BotState> {
+    if (runId) {
+      return (await apiPost<BotRunStatusResponse>(`/bot/stop/${runId}`))!;
+    }
+    return (await apiSend<BotState>("PUT", "/bot/status", { status: "stopped" }))!;
+  }
+
   static async getRunStatus(runId: string): Promise<BotRunStatusResponse> {
     return apiGet<BotRunStatusResponse>(`/bot/status/${runId}`);
   }

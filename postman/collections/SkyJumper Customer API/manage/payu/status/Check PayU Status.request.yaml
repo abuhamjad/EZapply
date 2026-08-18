@@ -1,7 +1,0 @@
-$kind: http-request
-description: "Auth required. Note: currently hardcodes a sample txnid server-side."
-url: "{{baseUrl}}/manage/payu/status"
-method: GET
-settings: {}
-examples: ./.resources/Check PayU Status.resources/examples
-order: 1000

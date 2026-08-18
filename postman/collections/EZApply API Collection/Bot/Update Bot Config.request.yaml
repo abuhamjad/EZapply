@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/bot/config"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "linkedin": true,
+      "indeed": false,
+      "glassdoor": false,
+      "dice": false,
+      "job_type": "Full-time",
+      "location": "Remote",
+      "min_salary": 100000,
+      "apply_delay": 5
+    }
+order: 3000

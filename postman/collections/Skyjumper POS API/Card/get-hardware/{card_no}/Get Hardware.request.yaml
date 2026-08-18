@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Hardware
-url: "{{baseUrl}}/Card/get-hardware/:card_no"
-method: GET
-pathVariables:
-  card_no: ""
-settings: {}
-examples: ./.resources/Get Hardware.resources/examples
-order: 1000

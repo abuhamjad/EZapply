@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/resumes/upload"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: file
+      key: file
+      src:
+        - ""
+order: 2000

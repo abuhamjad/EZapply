@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Inventory Product
-url: "{{baseUrl}}/partybooking/get-inventory-product"
-method: GET
-settings: {}
-examples: ./.resources/Get Inventory Product.resources/examples
-order: 1000

@@ -1,9 +1,0 @@
-$kind: http-request
-description: Change Sales Tab Status
-url: "{{baseUrl}}/api/v1/sales-tab-status/:id"
-method: GET
-pathVariables:
-  id: "1"
-settings: {}
-examples: ./.resources/Change Sales Tab Status.resources/examples
-order: 1000

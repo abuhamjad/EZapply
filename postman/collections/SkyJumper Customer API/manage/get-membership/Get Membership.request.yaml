@@ -1,7 +1,0 @@
-$kind: http-request
-description: Auth required. Lists membership tiers and flags the customer's current subscription.
-url: "{{baseUrl}}/manage/get-membership"
-method: GET
-settings: {}
-examples: ./.resources/Get Membership.resources/examples
-order: 1000

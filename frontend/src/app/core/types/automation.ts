@@ -1,16 +1,7 @@
 import type { BotRunStatus, BotStatus } from "./common";
 
-export interface StatusColorMap {
-  running: string;
-  paused: string;
-  stopped: string;
-}
-
-export interface StatusLabelMap {
-  running: string;
-  paused: string;
-  stopped: string;
-}
+export type StatusColorMap = Record<BotStatus, string>;
+export type StatusLabelMap = Record<BotStatus, string>;
 
 export interface AutomationData {
   statusColors: StatusColorMap;

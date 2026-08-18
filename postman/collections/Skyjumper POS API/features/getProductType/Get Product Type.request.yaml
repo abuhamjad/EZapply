@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Product Type
-url: "{{baseUrl}}/features/getProductType"
-method: GET
-settings: {}
-examples: ./.resources/Get Product Type.resources/examples
-order: 1000

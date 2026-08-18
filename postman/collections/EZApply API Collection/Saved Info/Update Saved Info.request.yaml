@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{baseUrl}}/saved-info"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "personal_info": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@example.com",
+        "phone": "+1234567890",
+        "location": "New York, NY",
+        "linkedin_url": "https://linkedin.com/in/johndoe",
+        "github_url": "https://github.com/johndoe",
+        "portfolio_url": "https://johndoe.com"
+      },
+      "work_experience": [],
+      "education": [],
+      "skills": [
+        "Python",
+        "FastAPI",
+        "React",
+        "TypeScript"
+      ]
+    }
+order: 2000

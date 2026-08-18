@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Product
-url: "{{baseUrl}}/customer_pos/getProduct/:product_type_id"
-method: GET
-pathVariables:
-  product_type_id: ""
-settings: {}
-examples: ./.resources/Get Product.resources/examples
-order: 1000

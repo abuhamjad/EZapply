@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Pending Combo Product
-url: "{{baseUrl}}/customer/getPendingComboProduct/:card_no"
-method: GET
-pathVariables:
-  card_no: ""
-settings: {}
-examples: ./.resources/Get Pending Combo Product.resources/examples
-order: 1000

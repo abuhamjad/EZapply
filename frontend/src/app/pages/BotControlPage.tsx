@@ -1,17 +1,33 @@
 import { useEffect, useState } from "react";
-import { DollarSign, HelpCircle, MapPin, Pause, Play, Square, AlertCircle } from "lucide-react";
+import { HelpCircle, IndianRupee, MapPin, Pause, Play, Square } from "lucide-react";
 import type { BotConfig, BotState, BotStatus, BotRunStatusResponse } from "../core/types";
 import { Card } from "../components/shared/components/cards";
 import { useAutomation } from "../core/hooks";
 
 type BotControlPageProps = {
   botStatus: BotStatus;
-  onStart: () => Promise<{ run_id: string; status: string } | null>;
+  onStart: (overrides?: { platforms?: string[]; keywords?: string[] }) => Promise<{ run_id: string; status: string } | null>;
   onSetStatus: (status: BotStatus) => void;
   botState: BotState | null;
   updateConfig: (config: BotConfig) => Promise<void>;
   activeRun: BotRunStatusResponse | null;
 };
+
+function parseAnnualSalary(val: string): number {
+  const text = val.toLowerCase().trim();
+  if (!text) return 0;
+  const lpaMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:lpa|lakh|lac)/);
+  if (lpaMatch) {
+    return Math.round(parseFloat(lpaMatch[1]) * 100000);
+  }
+  const digits = text.replace(/[^\d.]/g, "");
+  if (!digits) return 0;
+  const num = parseFloat(digits);
+  if (num > 0 && num <= 100) {
+    return Math.round(num * 100000);
+  }
+  return Math.round(num) || 0;
+}
 
 export function BotControlPage({
   botStatus,
@@ -29,8 +45,8 @@ export function BotControlPage({
     dice: false,
   });
   const [jobType, setJobType] = useState("full-time");
-  const [location, setLocation] = useState("Remote");
-  const [salary, setSalary] = useState("80000");
+  const [location, setLocation] = useState("India");
+  const [salary, setSalary] = useState("600000");
   const [delay, setDelay] = useState("45");
   const [saved, setSaved] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | null>(null);
@@ -77,7 +93,7 @@ export function BotControlPage({
       ...platforms,
       job_type: jobType as BotConfig["job_type"],
       location,
-      min_salary: parseInt(salary, 10) || 0,
+      min_salary: parseAnnualSalary(salary) || 0,
       apply_delay: parseInt(delay, 10) || 45,
       ...next,
     });
@@ -85,8 +101,20 @@ export function BotControlPage({
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const handleStart = async () => {
+    const enabledPlatforms: string[] = [];
+    if (platforms.linkedin) enabledPlatforms.push("linkedin");
+    if (platforms.indeed) enabledPlatforms.push("indeed");
+    if (platforms.glassdoor) enabledPlatforms.push("glassdoor");
+    if (platforms.dice) enabledPlatforms.push("dice");
+    if (enabledPlatforms.length === 0) enabledPlatforms.push("linkedin");
+
+    await saveConfig();
+    await onStart({ platforms: enabledPlatforms });
+  };
+
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="flex flex-col gap-6 w-full max-w-3xl">
       <Card>
         <h3 className="text-sm font-semibold text-foreground mb-5">
           Bot Status
@@ -102,25 +130,24 @@ export function BotControlPage({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="6"
-                  className="text-zinc-200"
+                  className="text-muted/30"
                 />
-                {/* Countdown arc — depletes as time runs out */}
+                {/* Progress */}
                 <circle
                   cx="50" cy="50" r="45"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="6"
-                  strokeLinecap="round"
                   strokeDasharray={CIRCUMFERENCE}
                   strokeDashoffset={arcOffset}
-                  className="text-blue-500 transition-all duration-1000 ease-linear"
+                  strokeLinecap="round"
+                  className="text-amber-500 transition-all duration-1000 ease-linear"
                 />
               </svg>
-              <div className="absolute text-center">
-                <div className="text-2xl font-bold text-foreground tabular-nums">
-                  {secondsLeft}
-                </div>
-                <div className="text-[10px] text-muted-foreground">sec</div>
+              <div className="absolute flex flex-col items-center">
+                <span className="text-xl font-bold font-mono text-foreground">
+                  {secondsLeft}s
+                </span>
               </div>
             </div>
             <div className="text-center">
@@ -133,41 +160,45 @@ export function BotControlPage({
             </div>
             <button
               onClick={() => onSetStatus("stopped")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 transition-all cursor-pointer"
             >
               <Square className="w-4 h-4" /> Cancel
             </button>
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               <button
-                onClick={() => void onStart()}
+                onClick={() => void handleStart()}
                 disabled={botStatus === "running"}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   botStatus === "running"
                     ? "bg-emerald-500 text-white shadow-sm cursor-default"
-                    : "bg-secondary text-foreground hover:bg-emerald-50 hover:text-emerald-700"
+                    : "bg-secondary text-foreground hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer"
                 }`}
               >
-                <Play className="w-4 h-4" /> {botStatus === "running" ? "Running..." : "Start"}
+                <Play className="w-4 h-4" /> {botStatus === "running" ? "Running..." : botStatus === "paused" ? "Resume" : "Start"}
               </button>
               <button
-                onClick={() => onSetStatus("paused")}
+                onClick={() => void onSetStatus("paused")}
+                disabled={botStatus !== "running"}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   botStatus === "paused"
-                    ? "bg-amber-400 text-white shadow-sm"
-                    : "bg-secondary text-foreground hover:bg-amber-50 hover:text-amber-700"
+                    ? "bg-amber-400 text-white shadow-sm cursor-default"
+                    : botStatus === "running"
+                      ? "bg-secondary text-foreground hover:bg-amber-50 hover:text-amber-700 cursor-pointer"
+                      : "bg-secondary/50 text-muted-foreground opacity-50 cursor-not-allowed"
                 }`}
               >
-                <Pause className="w-4 h-4" /> Pause
+                <Pause className="w-4 h-4" /> {botStatus === "paused" ? "Paused" : "Pause"}
               </button>
               <button
-                onClick={() => onSetStatus("stopped")}
+                onClick={() => void onSetStatus("stopped")}
+                disabled={botStatus === "stopped" || botStatus === "completed" || botStatus === "failed"}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  botStatus === "stopped"
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-secondary text-foreground hover:bg-secondary"
+                  botStatus === "stopped" || botStatus === "completed" || botStatus === "failed"
+                    ? "bg-secondary/50 text-muted-foreground opacity-50 cursor-not-allowed"
+                    : "bg-secondary text-foreground hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
                 }`}
               >
                 <Square className="w-4 h-4" /> Stop
@@ -185,7 +216,7 @@ export function BotControlPage({
         <h3 className="text-sm font-semibold text-foreground mb-4">
           Platforms
         </h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(
             Object.entries(platforms) as [keyof typeof platforms, boolean][]
           ).map(([key, val]) => {
@@ -267,15 +298,16 @@ export function BotControlPage({
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Location
+                Location (India / City)
               </label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <input
                   value={location}
+                  placeholder="e.g. India, Bengaluru, or Remote"
                   onChange={(e) => setLocation(e.target.value)}
                   onBlur={() => void saveConfig()}
                   className="w-full pl-8 pr-3 py-2 text-sm bg-input-background rounded-lg border-0 outline-none focus:ring-1 ring-ring"
@@ -284,12 +316,13 @@ export function BotControlPage({
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Min. Salary (USD)
+                Min. Annual Salary (INR / ₹)
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <input
                   value={salary}
+                  placeholder="e.g. 600000 or 6 LPA"
                   onChange={(e) => setSalary(e.target.value)}
                   onBlur={() => void saveConfig()}
                   className="w-full pl-8 pr-3 py-2 text-sm bg-input-background rounded-lg border-0 outline-none focus:ring-1 ring-ring"

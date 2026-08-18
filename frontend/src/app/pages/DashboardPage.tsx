@@ -13,6 +13,8 @@ import { StatusBadge } from "../components/shared/StatusBadge";
 import { Card } from "../components/shared/components/cards";
 import { useDashboard } from "../core/hooks";
 
+const logoUrl = "/logo.png";
+
 function pct(part: number, whole: number): string {
   if (!whole) return "0%";
   return `${((part / whole) * 100).toFixed(1)}%`;
@@ -74,16 +76,18 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className={`rounded-xl border p-6 flex items-center justify-between transition-colors ${heroClasses}`}>
-        <div className="flex items-center gap-4">
-          <div
-            className={`w-11 h-11 rounded-full flex items-center justify-center ${iconClasses}`}
-          >
-            <Bot className="w-5 h-5 text-white" />
+      <div className={`rounded-xl border p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${heroClasses}`}>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 flex items-center justify-center shrink-0">
+            <img
+              src={logoUrl}
+              alt="EZApply Logo"
+              className="w-full h-full object-contain drop-shadow-xs"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground">ApplyBot</span>
+              <span className="text-base font-bold text-foreground">EZApply</span>
               {botStatus === "running" && (
                 <span className="flex items-center gap-1 text-xs text-emerald-700 font-medium">
                   <span className="relative flex w-2 h-2">
@@ -99,7 +103,7 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
             </p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-border/50">
           <p className="text-xs text-muted-foreground">Applied today</p>
           <p className="text-2xl font-light" style={{ fontFamily: "var(--font-mono)" }}>
             {botStatus === "running" ? stats.appliedToday : "—"}
@@ -107,7 +111,7 @@ export function DashboardPage({ botStatus }: { botStatus: BotStatus }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Applied"
           value={String(stats.totalApplied)}

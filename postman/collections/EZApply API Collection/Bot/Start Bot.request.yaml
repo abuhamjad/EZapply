@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/bot/start"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "platforms": [
+        "linkedin"
+      ],
+      "search_query": "Software Engineer",
+      "location": "Remote",
+      "max_applications": 10
+    }
+order: 4000

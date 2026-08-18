@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get State City By Pincode
-url: "{{baseUrl}}/api/v1/getStateCity/:pincode"
-method: GET
-pathVariables:
-  pincode: "1"
-settings: {}
-examples: ./.resources/Get State City By Pincode.resources/examples
-order: 1000

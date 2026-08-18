@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Location Depend Data
-url: "{{baseUrl}}/api/v1/get-locationData/:location_id"
-method: GET
-pathVariables:
-  location_id: "1"
-settings: {}
-examples: ./.resources/Get Location Depend Data.resources/examples
-order: 1000

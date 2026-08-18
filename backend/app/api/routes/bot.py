@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database.connection import get_db
-from app.models.bot import BotConfig
+from app.models.bot import BotConfig, BotRun
+from app.core.constants import BotRunStatus
 from app.schemas.bot import (
     BotConfigSchema,
     BotStartRequest,
@@ -14,12 +15,11 @@ from app.schemas.bot import (
     ResolveQuestionRequest,
     ScreeningQuestionResponse,
 )
-from app.services.bot import BotService
+from app.services.bot import BotService, _active_loops
 from app.services.learning import LearningService
 
 router = APIRouter(prefix="/bot", tags=["Bot"])
 
-# Singleton config ID used in the bot_config table
 _BOT_CONFIG_ID = "default"
 
 
@@ -52,6 +52,22 @@ async def update_bot_status(payload: BotStatusUpdate, db: AsyncSession = Depends
     row.status = payload.status
     await db.commit()
     await db.refresh(row)
+
+    # Sync with active automation tasks
+    bot_service = BotService(db)
+    if payload.status == "stopped":
+        for run_id in list(_active_loops.keys()):
+            try:
+                await bot_service.stop_run(run_id)
+            except Exception:
+                pass
+    elif payload.status == "paused":
+        for run_id in list(_active_loops.keys()):
+            try:
+                await bot_service.pause_run(run_id)
+            except Exception:
+                pass
+
     return BotStateSchema(
         status=row.status,
         linkedin=row.linkedin,
@@ -82,6 +98,16 @@ async def update_bot_config(payload: BotConfigSchema, db: AsyncSession = Depends
     row.apply_delay = payload.apply_delay
     await db.commit()
     await db.refresh(row)
+
+    # Sync salary with SavedInfo
+    try:
+        from app.repositories.saved_info_repository import SavedInfoRepository
+        saved_repo = SavedInfoRepository(db)
+        saved_row = await saved_repo.get_or_create()
+        await saved_repo.update(saved_row, salary_expectation=str(payload.min_salary))
+    except Exception:
+        pass
+
     return BotStateSchema(
         status=row.status,
         linkedin=row.linkedin,
@@ -107,6 +133,22 @@ async def start_bot(payload: BotStartRequest, db: AsyncSession = Depends(get_db)
 async def get_bot_status(run_id: str, db: AsyncSession = Depends(get_db)):
     try:
         return await BotService(db).get_status(run_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.post("/pause/{run_id}", response_model=BotStatusResponse)
+async def pause_bot(run_id: str, db: AsyncSession = Depends(get_db)):
+    try:
+        return await BotService(db).pause_run(run_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.post("/resume/{run_id}", response_model=BotStatusResponse)
+async def resume_bot(run_id: str, db: AsyncSession = Depends(get_db)):
+    try:
+        return await BotService(db).resume_run(run_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 

@@ -108,4 +108,25 @@ export class SavedInfoService {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
     return res.json();
   }
+
+  static async listResumes(): Promise<ResumeRecord[]> {
+    return apiGet<ResumeRecord[]>("/resumes");
+  }
+
+  static async setDefaultResume(id: string): Promise<void> {
+    await apiSend("PUT", `/resumes/${id}/default`);
+  }
+}
+
+export interface ResumeRecord {
+  id: string;
+  original_filename: string;
+  file_type: string;
+  is_default: boolean;
+  created_at: string;
+  parsed: {
+    skills: string[];
+    experience: string[];
+    education: string[];
+  };
 }

@@ -1,7 +1,0 @@
-$kind: http-request
-description: Auth required.
-url: "{{baseUrl}}/manage/redeem-loyalty-point/1"
-method: GET
-settings: {}
-examples: ./.resources/Redeem Loyalty Point.resources/examples
-order: 1000

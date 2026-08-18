@@ -1,7 +1,0 @@
-$kind: http-request
-description: Auth required. Returns RSA-encrypted card details string in `data`.
-url: "{{baseUrl}}/manage/get-card-details"
-method: GET
-settings: {}
-examples: ./.resources/Get Card Details.resources/examples
-order: 1000

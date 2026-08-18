@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Waiver Detail (HTML)
-url: "{{baseUrl}}/api/v1/get-waiver-detail/:id"
-method: GET
-pathVariables:
-  id: "1"
-settings: {}
-examples: ./.resources/Get Waiver Detail (HTML).resources/examples
-order: 1000

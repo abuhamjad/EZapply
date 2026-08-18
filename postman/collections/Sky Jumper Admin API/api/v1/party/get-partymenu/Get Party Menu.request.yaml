@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Party Menu
-url: "{{baseUrl}}/api/v1/party/get-partymenu"
-method: GET
-settings: {}
-examples: ./.resources/Get Party Menu.resources/examples
-order: 1000

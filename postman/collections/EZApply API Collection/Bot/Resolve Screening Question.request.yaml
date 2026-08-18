@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/bot/resolve-question"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "question_id": "q_123",
+      "answer": "5 years",
+      "remember_for_future": true
+    }
+order: 7000

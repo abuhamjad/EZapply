@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Membership
-url: "{{baseUrl}}/features/getMemberShip"
-method: GET
-settings: {}
-examples: ./.resources/Get Membership.resources/examples
-order: 1000

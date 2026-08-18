@@ -1,9 +1,0 @@
-$kind: http-request
-description: Change Coupon Status
-url: "{{baseUrl}}/api/v1/coupon-status/:id"
-method: GET
-pathVariables:
-  id: "1"
-settings: {}
-examples: ./.resources/Change Coupon Status.resources/examples
-order: 1000

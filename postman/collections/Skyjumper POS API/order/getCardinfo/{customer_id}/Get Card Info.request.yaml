@@ -1,9 +1,0 @@
-$kind: http-request
-description: Get Card Info
-url: "{{baseUrl}}/order/getCardinfo/:customer_id"
-method: GET
-pathVariables:
-  customer_id: ""
-settings: {}
-examples: ./.resources/Get Card Info.resources/examples
-order: 1000

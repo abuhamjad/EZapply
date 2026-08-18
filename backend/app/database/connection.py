@@ -38,3 +38,36 @@ async def init_db() -> None:
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    await _reset_stale_runs()
+
+
+async def _reset_stale_runs() -> None:
+    """
+    On every server start, mark any non-terminal BotRuns as STOPPED and
+    reset BotConfig.status to 'stopped'. This prevents the frontend from
+    showing a stuck 'running' or 'login_buffer' state after a server restart.
+    """
+    from datetime import datetime, timezone
+    from sqlalchemy import select
+    from app.models.bot import BotConfig, BotRun
+
+    TERMINAL = {"STOPPED", "COMPLETED", "FAILED"}
+
+    async with AsyncSessionLocal() as db:
+        runs = (
+            await db.execute(select(BotRun).where(BotRun.status.notin_(TERMINAL)))
+        ).scalars().all()
+
+        for run in runs:
+            run.status = "STOPPED"
+            run.finished_at = datetime.now(timezone.utc)
+            run.error_message = "Cleared: server restarted while run was active."
+
+        cfg_res = await db.execute(select(BotConfig).where(BotConfig.id == "default"))
+        cfg = cfg_res.scalar_one_or_none()
+        if cfg:
+            cfg.status = "stopped"
+
+        await db.commit()
+

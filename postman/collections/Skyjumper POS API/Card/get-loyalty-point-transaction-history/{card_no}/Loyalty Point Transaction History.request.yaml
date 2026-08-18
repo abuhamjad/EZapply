@@ -1,9 +1,0 @@
-$kind: http-request
-description: Loyalty Point Transaction History
-url: "{{baseUrl}}/Card/get-loyalty-point-transaction-history/:card_no"
-method: GET
-pathVariables:
-  card_no: ""
-settings: {}
-examples: ./.resources/Loyalty Point Transaction History.resources/examples
-order: 1000

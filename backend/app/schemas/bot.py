@@ -11,8 +11,8 @@ class BotConfigSchema(BaseModel):
     glassdoor: bool = False
     dice: bool = False
     job_type: str = "full-time"
-    location: str = "Remote"
-    min_salary: int = 80000
+    location: str = "India"
+    min_salary: int = 600000
     apply_delay: int = 45
 
 

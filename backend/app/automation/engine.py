@@ -42,6 +42,8 @@ logger = get_logger(__name__)
 PLATFORM_ADAPTERS = {
     Platform.LINKEDIN.value: linkedin,
     Platform.INDEED.value: indeed,
+    # glassdoor and dice adapters are planned but not yet implemented —
+    # they are accepted by the API but skipped gracefully in the run loop.
 }
 
 
@@ -211,7 +213,14 @@ async def run_automation(bot_run_id: str) -> None:
                         if run.applications_submitted >= run.application_limit:
                             break
 
-                        await adapter.open_application_modal(page, job)
+                        modal_opened = await adapter.open_application_modal(page, job)
+                        if not modal_opened:
+                            logger.info(
+                                "Skipping '%s' at '%s' — no Easy Apply modal opened",
+                                job.get("title"), job.get("company"),
+                            )
+                            continue
+
                         outcome = await form_filler.fill_and_submit(page, adapter, job)
 
                         if outcome == "paused":
@@ -246,6 +255,9 @@ async def run_automation(bot_run_id: str) -> None:
                 resume_context_json=None,
             )
 
+        except asyncio.CancelledError:
+            logger.info("Automation run %s task was cancelled/stopped", bot_run_id)
+            return
         except Exception as exc:  # noqa: BLE001
             logger.exception("Automation run %s failed", bot_run_id)
             err_msg = str(exc) if str(exc).strip() else f"{type(exc).__name__}: {exc!r}"

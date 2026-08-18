@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Party Activities And AddOns
-url: "{{baseUrl}}/api/v1/reports/get-party-activity-addons"
-method: GET
-settings: {}
-examples: ./.resources/Get Party Activities And AddOns.resources/examples
-order: 1000

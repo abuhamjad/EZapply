@@ -1,7 +1,0 @@
-$kind: http-request
-description: Get Support Contact
-url: "{{baseUrl}}/Support/getSupportContact"
-method: GET
-settings: {}
-examples: ./.resources/Get Support Contact.resources/examples
-order: 1000

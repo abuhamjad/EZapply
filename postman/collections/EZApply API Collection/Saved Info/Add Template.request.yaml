@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/saved-info/templates"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Software Developer Template"
+    }
+order: 5000

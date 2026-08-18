@@ -9,7 +9,7 @@ class ParsedResumeSummary(BaseModel):
     education: list[dict] = []
 
 
-class ResumeResponse(BaseModel):
+class ResumeBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
@@ -19,5 +19,11 @@ class ResumeResponse(BaseModel):
     created_at: datetime
 
 
-class ResumeUploadResponse(ResumeResponse):
+class ResumeResponse(ResumeBase):
+    """Returned by GET /resumes — includes parsed summary."""
+    parsed: ParsedResumeSummary = ParsedResumeSummary()
+
+
+class ResumeUploadResponse(ResumeBase):
+    """Returned after a successful upload."""
     parsed: ParsedResumeSummary
